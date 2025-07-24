@@ -6,16 +6,17 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"paperplay/config"
+	"paperplay/internal/api"
+	"paperplay/internal/cron"
+	"paperplay/internal/middleware"
+	"paperplay/internal/model"
+	"paperplay/internal/service"
+	"paperplay/internal/websocket"
 	"syscall"
 	"time"
 
 	"github.com/gin-gonic/gin"
-
-	"paperplay/config"
-	"paperplay/internal/api"
-	"paperplay/internal/middleware"
-	"paperplay/internal/model"
-	"paperplay/internal/service"
 )
 
 func main() {
@@ -77,6 +78,30 @@ func main() {
 	// Initialize metrics service
 	metricsService := middleware.NewMetricsService()
 
+	// Initialize WebSocket hub
+	wsHub := websocket.NewHub(logger.GetLogger())
+	go wsHub.Run()
+	logger.GetSugar().Info("WebSocket hub started")
+
+	// Initialize achievement service (after WebSocket hub)
+	achievementService := service.NewAchievementService(db.DB, logger.GetLogger(), wsHub, ethService)
+
+	// Initialize cron job manager
+	jobManager := cron.NewJobManager(
+		db.DB,
+		logger.GetLogger(),
+		&cfg.Cron,
+		achievementService,
+		userService,
+		wsHub,
+	)
+
+	// Start cron jobs
+	if err := jobManager.Start(); err != nil {
+		logger.GetSugar().Fatalf("Failed to start cron jobs: %v", err)
+	}
+	defer jobManager.Stop()
+
 	// Initialize API handlers
 	userHandler := api.NewUserHandler(db.DB, jwtService, userService, ethService)
 
@@ -103,8 +128,11 @@ func main() {
 			"timestamp": time.Now().UTC(),
 			"version":   "1.0.0",
 			"services": map[string]interface{}{
-				"database": db.Health() == nil,
-				"ethereum": ethService != nil && ethService.HealthCheck()["status"] == "healthy",
+				"database":     db.Health() == nil,
+				"ethereum":     ethService != nil && ethService.HealthCheck()["status"] == "healthy",
+				"websocket":    len(wsHub.GetConnectedUsers()) >= 0,
+				"cron_jobs":    jobManager.GetJobStats(),
+				"achievements": achievementService != nil,
 			},
 		}
 
@@ -116,8 +144,13 @@ func main() {
 		router.GET(cfg.Prometheus.Path, metricsService.PrometheusHandler())
 	}
 
+	// WebSocket endpoint
+	router.GET("/ws", func(c *gin.Context) {
+		wsHub.ServeWS(c, jwtService)
+	})
+
 	// API routes
-	setupAPIRoutes(router, userHandler, jwtService)
+	setupAPIRoutes(router, userHandler, jwtService, wsHub, achievementService)
 
 	// Create HTTP server
 	server := &http.Server{
@@ -155,7 +188,13 @@ func main() {
 }
 
 // setupAPIRoutes configures all API routes
-func setupAPIRoutes(router *gin.Engine, userHandler *api.UserHandler, jwtService *middleware.JWTService) {
+func setupAPIRoutes(
+	router *gin.Engine,
+	userHandler *api.UserHandler,
+	jwtService *middleware.JWTService,
+	wsHub *websocket.Hub,
+	achievementService *service.AchievementService,
+) {
 	// API v1 group
 	v1 := router.Group("/api/v1")
 
@@ -181,6 +220,93 @@ func setupAPIRoutes(router *gin.Engine, userHandler *api.UserHandler, jwtService
 			users.POST("/logout", userHandler.Logout)
 		}
 
+		// WebSocket connection info
+		ws := protected.Group("/ws")
+		{
+			ws.GET("/stats", func(c *gin.Context) {
+				stats := wsHub.GetStats()
+				c.JSON(http.StatusOK, map[string]interface{}{
+					"success": true,
+					"data":    stats,
+				})
+			})
+		}
+
+		// Achievement system endpoints
+		achievements := protected.Group("/achievements")
+		{
+			achievements.GET("", func(c *gin.Context) {
+				// Get all available achievements
+				allAchievements, err := achievementService.GetAllAchievements()
+				if err != nil {
+					c.JSON(http.StatusInternalServerError, gin.H{
+						"error":   "failed_to_get_achievements",
+						"message": "Failed to retrieve achievements",
+					})
+					return
+				}
+
+				c.JSON(http.StatusOK, map[string]interface{}{
+					"success": true,
+					"data":    allAchievements,
+				})
+			})
+
+			achievements.GET("/user", func(c *gin.Context) {
+				userID := c.GetString("user_id")
+
+				// Get user's achievements
+				userAchievements, err := achievementService.GetUserAchievements(userID)
+				if err != nil {
+					c.JSON(http.StatusInternalServerError, gin.H{
+						"error":   "failed_to_get_user_achievements",
+						"message": "Failed to retrieve user achievements",
+					})
+					return
+				}
+
+				c.JSON(http.StatusOK, map[string]interface{}{
+					"success": true,
+					"data":    userAchievements,
+				})
+			})
+
+			achievements.POST("/evaluate", func(c *gin.Context) {
+				userID := c.GetString("user_id")
+
+				// Manually trigger achievement evaluation
+				err := achievementService.EvaluateUserAchievements(userID)
+				if err != nil {
+					c.JSON(http.StatusInternalServerError, gin.H{
+						"error":   "evaluation_failed",
+						"message": err.Error(),
+					})
+					return
+				}
+
+				c.JSON(http.StatusOK, map[string]interface{}{
+					"success": true,
+					"message": "Achievement evaluation completed",
+				})
+			})
+		}
+
+		// System stats (admin endpoints)
+		system := protected.Group("/system")
+		{
+			system.GET("/stats", func(c *gin.Context) {
+				stats := map[string]interface{}{
+					"websocket": wsHub.GetStats(),
+					"database":  map[string]interface{}{"healthy": true},
+				}
+
+				c.JSON(http.StatusOK, map[string]interface{}{
+					"success": true,
+					"data":    stats,
+				})
+			})
+		}
+
 		// Subjects and levels (will be implemented later)
 		// subjects := protected.Group("/subjects")
 		// {
@@ -195,12 +321,6 @@ func setupAPIRoutes(router *gin.Engine, userHandler *api.UserHandler, jwtService
 		//     levels.POST("/:id/start", levelHandler.StartLevel)
 		//     levels.POST("/:id/submit", levelHandler.SubmitAnswer)
 		//     levels.POST("/:id/complete", levelHandler.CompleteLevel)
-		// }
-
-		// achievements := protected.Group("/achievements")
-		// {
-		//     achievements.GET("", achievementHandler.GetAchievements)
-		//     achievements.POST("/:id/claim", achievementHandler.ClaimAchievement)
 		// }
 
 		// stats := protected.Group("/stats")
