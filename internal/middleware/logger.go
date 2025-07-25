@@ -3,14 +3,13 @@ package middleware
 import (
 	"fmt"
 	"os"
+	"paperplay/config"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
-
-	"paperplay/config"
 )
 
 // LoggerService handles structured logging

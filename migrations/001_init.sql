@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS levels (
   paper_id       TEXT    NOT NULL UNIQUE,
   name           TEXT    NOT NULL,
   pass_condition TEXT    NOT NULL,
+  locked         BOOLEAN NOT NULL DEFAULT TRUE,
   meta_json      TEXT,
   x              INTEGER NOT NULL,
   y              INTEGER NOT NULL,

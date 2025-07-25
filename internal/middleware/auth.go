@@ -3,15 +3,14 @@ package middleware
 import (
 	"fmt"
 	"net/http"
+	"paperplay/config"
+	"paperplay/internal/model"
 	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"gorm.io/gorm"
-
-	"paperplay/config"
-	"paperplay/internal/model"
 )
 
 // JWTClaims represents JWT token claims
@@ -102,7 +101,6 @@ func (j *JWTService) ValidateAccessToken(tokenString string) (*JWTClaims, error)
 		}
 		return []byte(j.secretKey), nil
 	})
-
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse token: %w", err)
 	}
