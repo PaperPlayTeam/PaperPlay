@@ -320,7 +320,427 @@ Authorization: Bearer <access_token>
 }
 ```
 
-## Level System
+
+## Achievement System
+
+### Get All Achievements
+
+Get all available achievements in the system.
+
+**Endpoint**: `GET /api/v1/achievements`
+
+**Headers**:
+```
+Authorization: Bearer <access_token>
+```
+
+**Response** (200 OK):
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "uuid",
+      "name": "First Steps",
+      "description": "Complete your first level",
+      "icon_url": "https://example.com/icon.png",
+      "level": 1,
+      "category": "progression",
+      "is_active": true,
+      "rules": {
+        "type": "first_try",
+        "conditions": [
+          {
+            "field": "levels_completed",
+            "operator": ">=",
+            "value": 1
+          }
+        ]
+      },
+      "nft_metadata": {
+        "name": "First Steps NFT",
+        "description": "Commemorating your first completed level",
+        "image": "https://example.com/nft.png",
+        "attributes": [
+          {
+            "trait_type": "Category",
+            "value": "Progression"
+          }
+        ]
+      }
+    }
+  ]
+}
+```
+
+### Get User's Achievements
+
+Get achievements earned by the current user.
+
+**Endpoint**: `GET /api/v1/achievements/user`
+
+**Headers**:
+```
+Authorization: Bearer <access_token>
+```
+
+**Response** (200 OK):
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "uuid",
+      "user_id": "uuid",
+      "achievement_id": "uuid",
+      "earned_at": "2025-01-01T10:00:00Z",
+      "event_data": {
+        "trigger_event": "level_completed"
+      },
+      "achievement": {
+        "id": "uuid",
+        "name": "First Steps",
+        "description": "Complete your first level",
+        "level": 1
+      }
+    }
+  ]
+}
+```
+
+### Trigger Achievement Evaluation
+
+Manually trigger achievement evaluation for the current user (primarily for testing).
+
+**Endpoint**: `POST /api/v1/achievements/evaluate`
+
+**Headers**:
+```
+Authorization: Bearer <access_token>
+```
+
+**Response** (200 OK):
+```json
+{
+  "success": true,
+  "message": "Achievement evaluation completed"
+}
+```
+
+## WebSocket Interface
+
+### WebSocket Connection
+
+Connect to the WebSocket server for real-time notifications.
+
+**Endpoint**: `GET /ws`
+
+**Query Parameters** (optional):
+- `token`: JWT access token for authenticated connections
+
+**Connection URL**: `ws://localhost:8080/ws`
+
+### WebSocket Message Types
+
+#### Client to Server Messages
+
+**Ping Message**:
+```json
+{
+  "type": "ping"
+}
+```
+
+**Subscribe to Channel**:
+```json
+{
+  "type": "subscribe",
+  "channel": "achievements"
+}
+```
+
+#### Server to Client Messages
+
+**Connection Confirmation**:
+```json
+{
+  "type": "connected",
+  "data": {
+    "status": "connected"
+  },
+  "timestamp": "2025-01-01T10:00:00Z"
+}
+```
+
+**Pong Response**:
+```json
+{
+  "type": "pong",
+  "data": {
+    "status": "ok"
+  },
+  "timestamp": "2025-01-01T10:00:00Z"
+}
+```
+
+**Achievement Notification**:
+```json
+{
+  "type": "notification",
+  "user_id": "uuid",
+  "data": {
+    "id": "notification-uuid",
+    "type": "achievement",
+    "title": "New Achievement!",
+    "message": "You earned the 'First Steps' achievement!",
+    "icon": "https://example.com/icon.png",
+    "achievement": {
+      "id": "uuid",
+      "name": "First Steps",
+      "description": "Complete your first level",
+      "level": 1,
+      "icon_url": "https://example.com/icon.png"
+    }
+  },
+  "timestamp": "2025-01-01T10:00:00Z"
+}
+```
+
+**Weekly Report Notification**:
+```json
+{
+  "type": "notification",
+  "user_id": "uuid",
+  "data": {
+    "id": "notification-uuid",
+    "type": "weekly_report",
+    "title": "Weekly Learning Report",
+    "message": "This week you studied 5 days and answered 50 questions correctly!"
+  },
+  "timestamp": "2025-01-01T10:00:00Z"
+}
+```
+
+### WebSocket Stats
+
+Get WebSocket connection statistics.
+
+**Endpoint**: `GET /api/v1/ws/stats`
+
+**Headers**:
+```
+Authorization: Bearer <access_token>
+```
+
+**Response** (200 OK):
+```json
+{
+  "success": true,
+  "data": {
+    "total_clients": 15,
+    "connected_users": 12,
+    "broadcast_backlog": 0
+  }
+}
+```
+
+## System Endpoints
+
+### Health Check
+
+Check the health status of all system components.
+
+**Endpoint**: `GET /health`
+
+**Response** (200 OK):
+```json
+{
+  "status": "healthy",
+  "timestamp": "2025-01-01T10:00:00Z",
+  "version": "1.0.0",
+  "services": {
+    "database": true,
+    "ethereum": false,
+    "websocket": true,
+    "cron_jobs": {
+      "enabled": true,
+      "total_jobs": 3,
+      "jobs": [
+        {
+          "id": 1,
+          "next_run": "2025-01-02T02:00:00Z",
+          "prev_run": "2025-01-01T02:00:00Z"
+        }
+      ]
+    },
+    "achievements": true
+  }
+}
+```
+
+### Prometheus Metrics
+
+Get application metrics in Prometheus format.
+
+**Endpoint**: `GET /metrics`
+
+**Response** (200 OK):
+```
+# HELP paperplay_http_requests_total Total number of HTTP requests
+# TYPE paperplay_http_requests_total counter
+paperplay_http_requests_total{endpoint="/health",method="GET",status="200"} 1
+
+# HELP paperplay_active_connections Number of active connections
+# TYPE paperplay_active_connections gauge
+paperplay_active_connections 5
+
+# HELP paperplay_user_logins_total Total number of user login attempts
+# TYPE paperplay_user_logins_total counter
+paperplay_user_logins_total{status="success"} 10
+paperplay_user_logins_total{status="failed"} 2
+```
+
+### System Statistics
+
+Get detailed system statistics (requires authentication).
+
+**Endpoint**: `GET /api/v1/system/stats`
+
+**Headers**:
+```
+Authorization: Bearer <access_token>
+```
+
+**Response** (200 OK):
+```json
+{
+  "success": true,
+  "data": {
+    "websocket": {
+      "total_clients": 15,
+      "connected_users": 12,
+      "broadcast_backlog": 0
+    },
+    "database": {
+      "healthy": true
+    }
+  }
+}
+```
+
+## Error Responses
+
+All API endpoints follow a consistent error response format:
+
+**Validation Error** (400 Bad Request):
+```json
+{
+  "error": "validation_error",
+  "message": "Validation failed",
+  "details": "email: required field is missing"
+}
+```
+
+**Unauthorized** (401 Unauthorized):
+```json
+{
+  "error": "unauthorized",
+  "message": "Invalid or expired token"
+}
+```
+
+**Not Found** (404 Not Found):
+```json
+{
+  "error": "not_found",
+  "message": "Resource not found"
+}
+```
+
+**Conflict** (409 Conflict):
+```json
+{
+  "error": "user_exists",
+  "message": "User with this email already exists"
+}
+```
+
+**Internal Server Error** (500 Internal Server Error):
+```json
+{
+  "error": "internal_error",
+  "message": "An internal server error occurred",
+  "details": "Database connection failed"
+}
+```
+
+## Rate Limiting
+
+Currently, no rate limiting is implemented. In production, consider implementing rate limiting based on:
+- IP address for public endpoints
+- User ID for authenticated endpoints
+- Global rate limits for system protection
+
+## Security Considerations
+
+1. **HTTPS**: Use HTTPS in production
+2. **JWT Secrets**: Change default JWT secret key
+3. **CORS**: Configure appropriate CORS origins
+4. **Input Validation**: All inputs are validated
+5. **SQL Injection**: Protected by GORM ORM
+6. **Password Security**: Passwords are hashed with bcrypt
+
+## Cron Jobs
+
+The system runs background jobs for:
+
+1. **Daily Stats Update** (2:00 AM daily)
+   - Updates user learning streaks
+   - Calculates review recommendations
+   - Updates spaced repetition schedules
+
+2. **Weekly Report Generation** (3:00 AM Sundays)
+   - Generates weekly learning reports
+   - Sends notifications to active users
+
+3. **Achievement Check** (Every 5 minutes)
+   - Evaluates user achievements
+   - Awards new achievements
+   - Triggers NFT minting (if enabled)
+
+## Environment Variables
+
+Configure the application using environment variables:
+
+```bash
+# Server Configuration
+SERVER_PORT=8080
+SERVER_MODE=debug
+
+# Database
+DATABASE_DSN=./data/paperplay.db
+
+# JWT
+JWT_SECRET_KEY=your-super-secret-key
+JWT_ACCESS_TOKEN_DURATION=15
+JWT_REFRESH_TOKEN_DURATION=7
+
+# Ethereum (optional)
+ETHEREUM_ENABLED=false
+ETHEREUM_NETWORK_URL=https://sepolia.infura.io/v3/your-project-id
+ETHEREUM_CHAIN_ID=11155111
+
+# Logging
+LOG_LEVEL=info
+LOG_OUTPUT_PATH=./logs/app.log
+
+# Cron Jobs
+CRON_ENABLED=true
+```
+
+## Level System API Endpoints
+
+The following endpoints have been implemented and are ready for use:
 
 ### List All Subjects
 
@@ -770,429 +1190,23 @@ Authorization: Bearer <access_token>
 > * `500 Internal Server Error`: Server-side error
 
 
-## Achievement System
 
-### Get All Achievements
-
-Get all available achievements in the system.
-
-**Endpoint**: `GET /api/v1/achievements`
-
-**Headers**:
-```
-Authorization: Bearer <access_token>
-```
-
-**Response** (200 OK):
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "id": "uuid",
-      "name": "First Steps",
-      "description": "Complete your first level",
-      "icon_url": "https://example.com/icon.png",
-      "level": 1,
-      "category": "progression",
-      "is_active": true,
-      "rules": {
-        "type": "first_try",
-        "conditions": [
-          {
-            "field": "levels_completed",
-            "operator": ">=",
-            "value": 1
-          }
-        ]
-      },
-      "nft_metadata": {
-        "name": "First Steps NFT",
-        "description": "Commemorating your first completed level",
-        "image": "https://example.com/nft.png",
-        "attributes": [
-          {
-            "trait_type": "Category",
-            "value": "Progression"
-          }
-        ]
-      }
-    }
-  ]
-}
-```
-
-### Get User's Achievements
-
-Get achievements earned by the current user.
-
-**Endpoint**: `GET /api/v1/achievements/user`
-
-**Headers**:
-```
-Authorization: Bearer <access_token>
-```
-
-**Response** (200 OK):
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "id": "uuid",
-      "user_id": "uuid",
-      "achievement_id": "uuid",
-      "earned_at": "2025-01-01T10:00:00Z",
-      "event_data": {
-        "trigger_event": "level_completed"
-      },
-      "achievement": {
-        "id": "uuid",
-        "name": "First Steps",
-        "description": "Complete your first level",
-        "level": 1
-      }
-    }
-  ]
-}
-```
-
-### Trigger Achievement Evaluation
-
-Manually trigger achievement evaluation for the current user (primarily for testing).
-
-**Endpoint**: `POST /api/v1/achievements/evaluate`
-
-**Headers**:
-```
-Authorization: Bearer <access_token>
-```
-
-**Response** (200 OK):
-```json
-{
-  "success": true,
-  "message": "Achievement evaluation completed"
-}
-```
-
-## WebSocket Interface
-
-### WebSocket Connection
-
-Connect to the WebSocket server for real-time notifications.
-
-**Endpoint**: `GET /ws`
-
-**Query Parameters** (optional):
-- `token`: JWT access token for authenticated connections
-
-**Connection URL**: `ws://localhost:8080/ws`
-
-### WebSocket Message Types
-
-#### Client to Server Messages
-
-**Ping Message**:
-```json
-{
-  "type": "ping"
-}
-```
-
-**Subscribe to Channel**:
-```json
-{
-  "type": "subscribe",
-  "channel": "achievements"
-}
-```
-
-#### Server to Client Messages
-
-**Connection Confirmation**:
-```json
-{
-  "type": "connected",
-  "data": {
-    "status": "connected"
-  },
-  "timestamp": "2025-01-01T10:00:00Z"
-}
-```
-
-**Pong Response**:
-```json
-{
-  "type": "pong",
-  "data": {
-    "status": "ok"
-  },
-  "timestamp": "2025-01-01T10:00:00Z"
-}
-```
-
-**Achievement Notification**:
-```json
-{
-  "type": "notification",
-  "user_id": "uuid",
-  "data": {
-    "id": "notification-uuid",
-    "type": "achievement",
-    "title": "New Achievement!",
-    "message": "You earned the 'First Steps' achievement!",
-    "icon": "https://example.com/icon.png",
-    "achievement": {
-      "id": "uuid",
-      "name": "First Steps",
-      "description": "Complete your first level",
-      "level": 1,
-      "icon_url": "https://example.com/icon.png"
-    }
-  },
-  "timestamp": "2025-01-01T10:00:00Z"
-}
-```
-
-**Weekly Report Notification**:
-```json
-{
-  "type": "notification",
-  "user_id": "uuid",
-  "data": {
-    "id": "notification-uuid",
-    "type": "weekly_report",
-    "title": "Weekly Learning Report",
-    "message": "This week you studied 5 days and answered 50 questions correctly!"
-  },
-  "timestamp": "2025-01-01T10:00:00Z"
-}
-```
-
-### WebSocket Stats
-
-Get WebSocket connection statistics.
-
-**Endpoint**: `GET /api/v1/ws/stats`
-
-**Headers**:
-```
-Authorization: Bearer <access_token>
-```
-
-**Response** (200 OK):
-```json
-{
-  "success": true,
-  "data": {
-    "total_clients": 15,
-    "connected_users": 12,
-    "broadcast_backlog": 0
-  }
-}
-```
-
-## System Endpoints
-
-### Health Check
-
-Check the health status of all system components.
-
-**Endpoint**: `GET /health`
-
-**Response** (200 OK):
-```json
-{
-  "status": "healthy",
-  "timestamp": "2025-01-01T10:00:00Z",
-  "version": "1.0.0",
-  "services": {
-    "database": true,
-    "ethereum": false,
-    "websocket": true,
-    "cron_jobs": {
-      "enabled": true,
-      "total_jobs": 3,
-      "jobs": [
-        {
-          "id": 1,
-          "next_run": "2025-01-02T02:00:00Z",
-          "prev_run": "2025-01-01T02:00:00Z"
-        }
-      ]
-    },
-    "achievements": true
-  }
-}
-```
-
-### Prometheus Metrics
-
-Get application metrics in Prometheus format.
-
-**Endpoint**: `GET /metrics`
-
-**Response** (200 OK):
-```
-# HELP paperplay_http_requests_total Total number of HTTP requests
-# TYPE paperplay_http_requests_total counter
-paperplay_http_requests_total{endpoint="/health",method="GET",status="200"} 1
-
-# HELP paperplay_active_connections Number of active connections
-# TYPE paperplay_active_connections gauge
-paperplay_active_connections 5
-
-# HELP paperplay_user_logins_total Total number of user login attempts
-# TYPE paperplay_user_logins_total counter
-paperplay_user_logins_total{status="success"} 10
-paperplay_user_logins_total{status="failed"} 2
-```
-
-### System Statistics
-
-Get detailed system statistics (requires authentication).
-
-**Endpoint**: `GET /api/v1/system/stats`
-
-**Headers**:
-```
-Authorization: Bearer <access_token>
-```
-
-**Response** (200 OK):
-```json
-{
-  "success": true,
-  "data": {
-    "websocket": {
-      "total_clients": 15,
-      "connected_users": 12,
-      "broadcast_backlog": 0
-    },
-    "database": {
-      "healthy": true
-    }
-  }
-}
-```
-
-## Error Responses
-
-All API endpoints follow a consistent error response format:
-
-**Validation Error** (400 Bad Request):
-```json
-{
-  "error": "validation_error",
-  "message": "Validation failed",
-  "details": "email: required field is missing"
-}
-```
-
-**Unauthorized** (401 Unauthorized):
-```json
-{
-  "error": "unauthorized",
-  "message": "Invalid or expired token"
-}
-```
-
-**Not Found** (404 Not Found):
-```json
-{
-  "error": "not_found",
-  "message": "Resource not found"
-}
-```
-
-**Conflict** (409 Conflict):
-```json
-{
-  "error": "user_exists",
-  "message": "User with this email already exists"
-}
-```
-
-**Internal Server Error** (500 Internal Server Error):
-```json
-{
-  "error": "internal_error",
-  "message": "An internal server error occurred",
-  "details": "Database connection failed"
-}
-```
-
-## Rate Limiting
-
-Currently, no rate limiting is implemented. In production, consider implementing rate limiting based on:
-- IP address for public endpoints
-- User ID for authenticated endpoints
-- Global rate limits for system protection
-
-## Security Considerations
-
-1. **HTTPS**: Use HTTPS in production
-2. **JWT Secrets**: Change default JWT secret key
-3. **CORS**: Configure appropriate CORS origins
-4. **Input Validation**: All inputs are validated
-5. **SQL Injection**: Protected by GORM ORM
-6. **Password Security**: Passwords are hashed with bcrypt
-
-## Cron Jobs
-
-The system runs background jobs for:
-
-1. **Daily Stats Update** (2:00 AM daily)
-   - Updates user learning streaks
-   - Calculates review recommendations
-   - Updates spaced repetition schedules
-
-2. **Weekly Report Generation** (3:00 AM Sundays)
-   - Generates weekly learning reports
-   - Sends notifications to active users
-
-3. **Achievement Check** (Every 5 minutes)
-   - Evaluates user achievements
-   - Awards new achievements
-   - Triggers NFT minting (if enabled)
-
-## Environment Variables
-
-Configure the application using environment variables:
-
-```bash
-# Server Configuration
-SERVER_PORT=8080
-SERVER_MODE=debug
-
-# Database
-DATABASE_DSN=./data/paperplay.db
-
-# JWT
-JWT_SECRET_KEY=your-super-secret-key
-JWT_ACCESS_TOKEN_DURATION=15
-JWT_REFRESH_TOKEN_DURATION=7
-
-# Ethereum (optional)
-ETHEREUM_ENABLED=false
-ETHEREUM_NETWORK_URL=https://sepolia.infura.io/v3/your-project-id
-ETHEREUM_CHAIN_ID=11155111
-
-# Logging
-LOG_LEVEL=info
-LOG_OUTPUT_PATH=./logs/app.log
-
-# Cron Jobs
-CRON_ENABLED=true
-```
-
-## Future API Endpoints
+The following Level System endpoints are now implemented and available:
+
+- ✅ `GET /api/v1/subjects` - Get all subjects
+- ✅ `GET /api/v1/subjects/:id` - Get subject details  
+- ✅ `GET /api/v1/subjects/:id/papers` - Get papers under a subject
+- ✅ `GET /api/v1/subjects/:id/roadmap` - Get subject roadmap
+- ✅ `GET /api/v1/papers/:id` - Get paper details
+- ✅ `GET /api/v1/papers/:id/level` - Get level for a paper
+- ✅ `GET /api/v1/levels/:id` - Get level details
+- ✅ `GET /api/v1/levels/:id/questions` - Get questions in a level
+- ✅ `GET /api/v1/questions/:id` - Get question details
+- ✅ `POST /api/v1/levels/:id/start` - Start a level
+- ✅ `POST /api/v1/levels/:id/submit` - Submit answer
+- ✅ `POST /api/v1/levels/:id/complete` - Complete level
 
 The following endpoints are planned for future implementation:
 
-- `GET /api/v1/subjects` - Get all subjects
-- `GET /api/v1/subjects/:id` - Get subject details
-- `GET /api/v1/levels/:id` - Get level details
 - `GET /api/v1/stats/dashboard` - Get user dashboard
 - `GET /api/v1/stats/progress` - Get detailed progress stats 

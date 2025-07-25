@@ -104,6 +104,7 @@ func main() {
 
 	// Initialize API handlers
 	userHandler := api.NewUserHandler(db.DB, jwtService, userService, ethService)
+	levelHandler := api.NewLevelHandler(db.DB)
 
 	// Setup Gin router
 	if cfg.Server.Mode == "release" {
@@ -150,7 +151,7 @@ func main() {
 	})
 
 	// API routes
-	setupAPIRoutes(router, userHandler, jwtService, wsHub, achievementService)
+	setupAPIRoutes(router, userHandler, levelHandler, jwtService, wsHub, achievementService)
 
 	// Create HTTP server
 	server := &http.Server{
@@ -191,6 +192,7 @@ func main() {
 func setupAPIRoutes(
 	router *gin.Engine,
 	userHandler *api.UserHandler,
+	levelHandler *api.LevelHandler,
 	jwtService *middleware.JWTService,
 	wsHub *websocket.Hub,
 	achievementService *service.AchievementService,
@@ -307,22 +309,36 @@ func setupAPIRoutes(
 			})
 		}
 
-		// Subjects and levels (will be implemented later)
-		// subjects := protected.Group("/subjects")
-		// {
-		//     subjects.GET("", subjectHandler.GetSubjects)
-		//     subjects.GET("/:id", subjectHandler.GetSubject)
-		//     subjects.GET("/:id/roadmap", subjectHandler.GetRoadmap)
-		// }
+		// Level System API endpoints
+		subjects := protected.Group("/subjects")
+		{
+			subjects.GET("", levelHandler.GetAllSubjects)
+			subjects.GET("/:subject_id", levelHandler.GetSubject)
+			subjects.GET("/:subject_id/papers", levelHandler.GetSubjectPapers)
+			subjects.GET("/:subject_id/roadmap", levelHandler.GetSubjectRoadmap)
+		}
 
-		// levels := protected.Group("/levels")
-		// {
-		//     levels.GET("/:id", levelHandler.GetLevel)
-		//     levels.POST("/:id/start", levelHandler.StartLevel)
-		//     levels.POST("/:id/submit", levelHandler.SubmitAnswer)
-		//     levels.POST("/:id/complete", levelHandler.CompleteLevel)
-		// }
+		papers := protected.Group("/papers")
+		{
+			papers.GET("/:paper_id", levelHandler.GetPaper)
+			papers.GET("/:paper_id/level", levelHandler.GetPaperLevel)
+		}
 
+		levels := protected.Group("/levels")
+		{
+			levels.GET("/:level_id", levelHandler.GetLevel)
+			levels.GET("/:level_id/questions", levelHandler.GetLevelQuestions)
+			levels.POST("/:level_id/start", levelHandler.StartLevel)
+			levels.POST("/:level_id/submit", levelHandler.SubmitAnswer)
+			levels.POST("/:level_id/complete", levelHandler.CompleteLevel)
+		}
+
+		questions := protected.Group("/questions")
+		{
+			questions.GET("/:question_id", levelHandler.GetQuestion)
+		}
+
+		// Future stats endpoints (to be implemented later)
 		// stats := protected.Group("/stats")
 		// {
 		//     stats.GET("/dashboard", statsHandler.GetDashboard)

@@ -337,6 +337,453 @@ Authorization: Bearer <access_token>
 }
 ```
 
+## 成就系统
+
+### 获取所有成就
+
+获取系统中所有可用的成就。
+
+**端点**: `GET /api/v1/achievements`
+
+**请求头**:
+
+```
+Authorization: Bearer <access_token>
+```
+
+**响应** (200 OK):
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "uuid",
+      "name": "第一步",
+      "description": "完成你的第一个关卡",
+      "icon_url": "https://example.com/icon.png",
+      "level": 1,
+      "category": "progression",
+      "is_active": true,
+      "rules": {
+        "type": "first_try",
+        "conditions": [
+          {
+            "field": "levels_completed",
+            "operator": ">=",
+            "value": 1
+          }
+        ]
+      },
+      "nft_metadata": {
+        "name": "“第一步” NFT",
+        "description": "为纪念您完成的第一个关卡",
+        "image": "https://example.com/nft.png",
+        "attributes": [
+          {
+            "trait_type": "Category",
+            "value": "Progression"
+          }
+        ]
+      }
+    }
+  ]
+}
+```
+
+### 获取用户的成就
+
+获取当前用户获得的成就。
+
+**端点**: `GET /api/v1/achievements/user`
+
+**请求头**:
+
+```
+Authorization: Bearer <access_token>
+```
+
+**响应** (200 OK):
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "uuid",
+      "user_id": "uuid",
+      "achievement_id": "uuid",
+      "earned_at": "2025-01-01T10:00:00Z",
+      "event_data": {
+        "trigger_event": "level_completed"
+      },
+      "achievement": {
+        "id": "uuid",
+        "name": "第一步",
+        "description": "完成你的第一个关卡",
+        "level": 1
+      }
+    }
+  ]
+}
+```
+
+### 触发成就评估
+
+为当前用户手动触发成就评估（主要用于测试）。
+
+**端点**: `POST /api/v1/achievements/evaluate`
+
+**请求头**:
+
+```
+Authorization: Bearer <access_token>
+```
+
+**响应** (200 OK):
+
+```json
+{
+  "success": true,
+  "message": "成就评估完成"
+}
+```
+
+## WebSocket 接口
+
+### WebSocket 连接
+
+连接到 WebSocket 服务器以获取实时通知。
+
+**端点**: `GET /ws`
+
+**查询参数** (可选):
+
+- `token`: 用于认证连接的 JWT 访问令牌
+
+**连接 URL**: `ws://localhost:8080/ws`
+
+### WebSocket 消息类型
+
+#### 客户端到服务器消息
+
+**Ping 消息**:
+
+```json
+{
+  "type": "ping"
+}
+```
+
+**订阅频道**:
+
+```json
+{
+  "type": "subscribe",
+  "channel": "achievements"
+}
+```
+
+#### 服务器到客户端消息
+
+**连接确认**:
+
+```json
+{
+  "type": "connected",
+  "data": {
+    "status": "connected"
+  },
+  "timestamp": "2025-01-01T10:00:00Z"
+}
+```
+
+**Pong 响应**:
+
+```json
+{
+  "type": "pong",
+  "data": {
+    "status": "ok"
+  },
+  "timestamp": "2025-01-01T10:00:00Z"
+}
+```
+
+**成就通知**:
+
+```json
+{
+  "type": "notification",
+  "user_id": "uuid",
+  "data": {
+    "id": "notification-uuid",
+    "type": "achievement",
+    "title": "新成就！",
+    "message": "你获得了“第一步”成就！",
+    "icon": "https://example.com/icon.png",
+    "achievement": {
+      "id": "uuid",
+      "name": "第一步",
+      "description": "完成你的第一个关卡",
+      "level": 1,
+      "icon_url": "https://example.com/icon.png"
+    }
+  },
+  "timestamp": "2025-01-01T10:00:00Z"
+}
+```
+
+**周报通知**:
+
+```json
+{
+  "type": "notification",
+  "user_id": "uuid",
+  "data": {
+    "id": "notification-uuid",
+    "type": "weekly_report",
+    "title": "学习周报",
+    "message": "本周你学习了5天，正确回答了50个问题！"
+  },
+  "timestamp": "2025-01-01T10:00:00Z"
+}
+```
+
+### WebSocket 统计信息
+
+获取 WebSocket 连接统计信息。
+
+**端点**: `GET /api/v1/ws/stats`
+
+**请求头**:
+
+```
+Authorization: Bearer <access_token>
+```
+
+**响应** (200 OK):
+
+```json
+{
+  "success": true,
+  "data": {
+    "total_clients": 15,
+    "connected_users": 12,
+    "broadcast_backlog": 0
+  }
+}
+```
+
+## 系统端点
+
+### 健康检查
+
+检查所有系统组件的健康状态。
+
+**端点**: `GET /health`
+
+**响应** (200 OK):
+
+```json
+{
+  "status": "healthy",
+  "timestamp": "2025-01-01T10:00:00Z",
+  "version": "1.0.0",
+  "services": {
+    "database": true,
+    "ethereum": false,
+    "websocket": true,
+    "cron_jobs": {
+      "enabled": true,
+      "total_jobs": 3,
+      "jobs": [
+        {
+          "id": 1,
+          "next_run": "2025-01-02T02:00:00Z",
+          "prev_run": "2025-01-01T02:00:00Z"
+        }
+      ]
+    },
+    "achievements": true
+  }
+}
+```
+
+### Prometheus 指标
+
+以 Prometheus 格式获取应用程序指标。
+
+**端点**: `GET /metrics`
+
+**响应** (200 OK):
+
+```
+# HELP paperplay_http_requests_total HTTP 请求总数
+# TYPE paperplay_http_requests_total counter
+paperplay_http_requests_total{endpoint="/health",method="GET",status="200"} 1
+
+# HELP paperplay_active_connections 活跃连接数
+# TYPE paperplay_active_connections gauge
+paperplay_active_connections 5
+
+# HELP paperplay_user_logins_total 用户登录尝试总数
+# TYPE paperplay_user_logins_total counter
+paperplay_user_logins_total{status="success"} 10
+paperplay_user_logins_total{status="failed"} 2
+```
+
+### 系统统计
+
+获取详细的系统统计信息（需要认证）。
+
+**端点**: `GET /api/v1/system/stats`
+
+**请求头**:
+
+```
+Authorization: Bearer <access_token>
+```
+
+**响应** (200 OK):
+
+```json
+{
+  "success": true,
+  "data": {
+    "websocket": {
+      "total_clients": 15,
+      "connected_users": 12,
+      "broadcast_backlog": 0
+    },
+    "database": {
+      "healthy": true
+    }
+  }
+}
+```
+
+## 错误响应
+
+所有 API 端点都遵循一致的错误响应格式：
+
+**验证错误** (400 Bad Request):
+
+```json
+{
+  "error": "validation_error",
+  "message": "验证失败",
+  "details": "email: 必填字段缺失"
+}
+```
+
+**未经授权** (401 Unauthorized):
+
+```json
+{
+  "error": "unauthorized",
+  "message": "无效或过期的令牌"
+}
+```
+
+**未找到** (404 Not Found):
+
+```json
+{
+  "error": "not_found",
+  "message": "资源未找到"
+}
+```
+
+**冲突** (409 Conflict):
+
+```json
+{
+  "error": "user_exists",
+  "message": "该邮箱已存在用户"
+}
+```
+
+**内部服务器错误** (500 Internal Server Error):
+
+```json
+{
+  "error": "internal_error",
+  "message": "发生内部服务器错误",
+  "details": "数据库连接失败"
+}
+```
+
+## 速率限制
+
+目前沒有实施速率限制。在生产环境中，应考虑根据以下条件实施速率限制：
+
+- 公共端点的 IP 地址
+- 认证端点的用户 ID
+- 用于系统保护的全局速率限制
+
+## 安全注意事项
+
+1. **HTTPS**: 在生产环境中使用 HTTPS
+2. **JWT 密钥**: 更改默认的 JWT 密钥
+3. **CORS**: 配置适当的 CORS 源
+4. **输入验证**: 所有输入都经过验证
+5. **SQL 注入**: 由 GORM ORM 提供保护
+6. **密码安全**: 密码使用 bcrypt 进行哈希处理
+
+## 定时任务
+
+系统运行以下后台任务：
+
+1. **每日统计更新** (每天凌晨 2:00)
+
+   - 更新用户学习连续记录
+   - 计算复习建议
+   - 更新间隔重复时间表
+2. **每周报告生成** (每周日凌晨 3:00)
+
+   - 生成每周学习报告
+   - 向活跃用户发送通知
+3. **成就检查** (每 5 分钟)
+
+   - 评估用户成就
+   - 授予新成就
+   - 触发 NFT 铸造 (如果启用)
+
+## 环境变量
+
+使用环境变量配置应用程序：
+
+```bash
+# 服务器配置
+SERVER_PORT=8080
+SERVER_MODE=debug
+
+# 数据库
+DATABASE_DSN=./data/paperplay.db
+
+# JWT
+JWT_SECRET_KEY=your-super-secret-key
+JWT_ACCESS_TOKEN_DURATION=15
+JWT_REFRESH_TOKEN_DURATION=7
+
+# 以太坊 (可选)
+ETHEREUM_ENABLED=false
+ETHEREUM_NETWORK_URL=https://sepolia.infura.io/v3/your-project-id
+ETHEREUM_CHAIN_ID=11155111
+
+# 日志
+LOG_LEVEL=info
+LOG_OUTPUT_PATH=./logs/app.log
+
+# 定时任务
+CRON_ENABLED=true
+```
+
+## 未来 API 端点
+
+这些端点应立即实现：
+
 ## 关卡系统
 
 ### 列出所有学科
@@ -786,450 +1233,7 @@ Authorization: Bearer <access_token>
 > * `404 Not Found`: 资源未找到 (例如，无效的 `subject_id`, `paper_id`, `level_id`, 或 `question_id`)
 > * `500 Internal Server Error`: 服务器端错误
 
-## 成就系统
 
-### 获取所有成就
-
-获取系统中所有可用的成就。
-
-**端点**: `GET /api/v1/achievements`
-
-**请求头**:
-
-```
-Authorization: Bearer <access_token>
-```
-
-**响应** (200 OK):
-
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "id": "uuid",
-      "name": "第一步",
-      "description": "完成你的第一个关卡",
-      "icon_url": "https://example.com/icon.png",
-      "level": 1,
-      "category": "progression",
-      "is_active": true,
-      "rules": {
-        "type": "first_try",
-        "conditions": [
-          {
-            "field": "levels_completed",
-            "operator": ">=",
-            "value": 1
-          }
-        ]
-      },
-      "nft_metadata": {
-        "name": "“第一步” NFT",
-        "description": "为纪念您完成的第一个关卡",
-        "image": "https://example.com/nft.png",
-        "attributes": [
-          {
-            "trait_type": "Category",
-            "value": "Progression"
-          }
-        ]
-      }
-    }
-  ]
-}
-```
-
-### 获取用户的成就
-
-获取当前用户获得的成就。
-
-**端点**: `GET /api/v1/achievements/user`
-
-**请求头**:
-
-```
-Authorization: Bearer <access_token>
-```
-
-**响应** (200 OK):
-
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "id": "uuid",
-      "user_id": "uuid",
-      "achievement_id": "uuid",
-      "earned_at": "2025-01-01T10:00:00Z",
-      "event_data": {
-        "trigger_event": "level_completed"
-      },
-      "achievement": {
-        "id": "uuid",
-        "name": "第一步",
-        "description": "完成你的第一个关卡",
-        "level": 1
-      }
-    }
-  ]
-}
-```
-
-### 触发成就评估
-
-为当前用户手动触发成就评估（主要用于测试）。
-
-**端点**: `POST /api/v1/achievements/evaluate`
-
-**请求头**:
-
-```
-Authorization: Bearer <access_token>
-```
-
-**响应** (200 OK):
-
-```json
-{
-  "success": true,
-  "message": "成就评估完成"
-}
-```
-
-## WebSocket 接口
-
-### WebSocket 连接
-
-连接到 WebSocket 服务器以获取实时通知。
-
-**端点**: `GET /ws`
-
-**查询参数** (可选):
-
-- `token`: 用于认证连接的 JWT 访问令牌
-
-**连接 URL**: `ws://localhost:8080/ws`
-
-### WebSocket 消息类型
-
-#### 客户端到服务器消息
-
-**Ping 消息**:
-
-```json
-{
-  "type": "ping"
-}
-```
-
-**订阅频道**:
-
-```json
-{
-  "type": "subscribe",
-  "channel": "achievements"
-}
-```
-
-#### 服务器到客户端消息
-
-**连接确认**:
-
-```json
-{
-  "type": "connected",
-  "data": {
-    "status": "connected"
-  },
-  "timestamp": "2025-01-01T10:00:00Z"
-}
-```
-
-**Pong 响应**:
-
-```json
-{
-  "type": "pong",
-  "data": {
-    "status": "ok"
-  },
-  "timestamp": "2025-01-01T10:00:00Z"
-}
-```
-
-**成就通知**:
-
-```json
-{
-  "type": "notification",
-  "user_id": "uuid",
-  "data": {
-    "id": "notification-uuid",
-    "type": "achievement",
-    "title": "新成就！",
-    "message": "你获得了“第一步”成就！",
-    "icon": "https://example.com/icon.png",
-    "achievement": {
-      "id": "uuid",
-      "name": "第一步",
-      "description": "完成你的第一个关卡",
-      "level": 1,
-      "icon_url": "https://example.com/icon.png"
-    }
-  },
-  "timestamp": "2025-01-01T10:00:00Z"
-}
-```
-
-**周报通知**:
-
-```json
-{
-  "type": "notification",
-  "user_id": "uuid",
-  "data": {
-    "id": "notification-uuid",
-    "type": "weekly_report",
-    "title": "学习周报",
-    "message": "本周你学习了5天，正确回答了50个问题！"
-  },
-  "timestamp": "2025-01-01T10:00:00Z"
-}
-```
-
-### WebSocket 统计信息
-
-获取 WebSocket 连接统计信息。
-
-**端点**: `GET /api/v1/ws/stats`
-
-**请求头**:
-
-```
-Authorization: Bearer <access_token>
-```
-
-**响应** (200 OK):
-
-```json
-{
-  "success": true,
-  "data": {
-    "total_clients": 15,
-    "connected_users": 12,
-    "broadcast_backlog": 0
-  }
-}
-```
-
-## 系统端点
-
-### 健康检查
-
-检查所有系统组件的健康状态。
-
-**端点**: `GET /health`
-
-**响应** (200 OK):
-
-```json
-{
-  "status": "healthy",
-  "timestamp": "2025-01-01T10:00:00Z",
-  "version": "1.0.0",
-  "services": {
-    "database": true,
-    "ethereum": false,
-    "websocket": true,
-    "cron_jobs": {
-      "enabled": true,
-      "total_jobs": 3,
-      "jobs": [
-        {
-          "id": 1,
-          "next_run": "2025-01-02T02:00:00Z",
-          "prev_run": "2025-01-01T02:00:00Z"
-        }
-      ]
-    },
-    "achievements": true
-  }
-}
-```
-
-### Prometheus 指标
-
-以 Prometheus 格式获取应用程序指标。
-
-**端点**: `GET /metrics`
-
-**响应** (200 OK):
-
-```
-# HELP paperplay_http_requests_total HTTP 请求总数
-# TYPE paperplay_http_requests_total counter
-paperplay_http_requests_total{endpoint="/health",method="GET",status="200"} 1
-
-# HELP paperplay_active_connections 活跃连接数
-# TYPE paperplay_active_connections gauge
-paperplay_active_connections 5
-
-# HELP paperplay_user_logins_total 用户登录尝试总数
-# TYPE paperplay_user_logins_total counter
-paperplay_user_logins_total{status="success"} 10
-paperplay_user_logins_total{status="failed"} 2
-```
-
-### 系统统计
-
-获取详细的系统统计信息（需要认证）。
-
-**端点**: `GET /api/v1/system/stats`
-
-**请求头**:
-
-```
-Authorization: Bearer <access_token>
-```
-
-**响应** (200 OK):
-
-```json
-{
-  "success": true,
-  "data": {
-    "websocket": {
-      "total_clients": 15,
-      "connected_users": 12,
-      "broadcast_backlog": 0
-    },
-    "database": {
-      "healthy": true
-    }
-  }
-}
-```
-
-## 错误响应
-
-所有 API 端点都遵循一致的错误响应格式：
-
-**验证错误** (400 Bad Request):
-
-```json
-{
-  "error": "validation_error",
-  "message": "验证失败",
-  "details": "email: 必填字段缺失"
-}
-```
-
-**未经授权** (401 Unauthorized):
-
-```json
-{
-  "error": "unauthorized",
-  "message": "无效或过期的令牌"
-}
-```
-
-**未找到** (404 Not Found):
-
-```json
-{
-  "error": "not_found",
-  "message": "资源未找到"
-}
-```
-
-**冲突** (409 Conflict):
-
-```json
-{
-  "error": "user_exists",
-  "message": "该邮箱已存在用户"
-}
-```
-
-**内部服务器错误** (500 Internal Server Error):
-
-```json
-{
-  "error": "internal_error",
-  "message": "发生内部服务器错误",
-  "details": "数据库连接失败"
-}
-```
-
-## 速率限制
-
-目前沒有实施速率限制。在生产环境中，应考虑根据以下条件实施速率限制：
-
-- 公共端点的 IP 地址
-- 认证端点的用户 ID
-- 用于系统保护的全局速率限制
-
-## 安全注意事项
-
-1. **HTTPS**: 在生产环境中使用 HTTPS
-2. **JWT 密钥**: 更改默认的 JWT 密钥
-3. **CORS**: 配置适当的 CORS 源
-4. **输入验证**: 所有输入都经过验证
-5. **SQL 注入**: 由 GORM ORM 提供保护
-6. **密码安全**: 密码使用 bcrypt 进行哈希处理
-
-## 定时任务
-
-系统运行以下后台任务：
-
-1. **每日统计更新** (每天凌晨 2:00)
-
-   - 更新用户学习连续记录
-   - 计算复习建议
-   - 更新间隔重复时间表
-2. **每周报告生成** (每周日凌晨 3:00)
-
-   - 生成每周学习报告
-   - 向活跃用户发送通知
-3. **成就检查** (每 5 分钟)
-
-   - 评估用户成就
-   - 授予新成就
-   - 触发 NFT 铸造 (如果启用)
-
-## 环境变量
-
-使用环境变量配置应用程序：
-
-```bash
-# 服务器配置
-SERVER_PORT=8080
-SERVER_MODE=debug
-
-# 数据库
-DATABASE_DSN=./data/paperplay.db
-
-# JWT
-JWT_SECRET_KEY=your-super-secret-key
-JWT_ACCESS_TOKEN_DURATION=15
-JWT_REFRESH_TOKEN_DURATION=7
-
-# 以太坊 (可选)
-ETHEREUM_ENABLED=false
-ETHEREUM_NETWORK_URL=https://sepolia.infura.io/v3/your-project-id
-ETHEREUM_CHAIN_ID=11155111
-
-# 日志
-LOG_LEVEL=info
-LOG_OUTPUT_PATH=./logs/app.log
-
-# 定时任务
-CRON_ENABLED=true
-```
-
-## 未来 API 端点
 
 计划在未来实现以下端点：
 
