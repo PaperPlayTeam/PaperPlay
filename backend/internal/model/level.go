@@ -64,11 +64,11 @@ func (l *Level) SetPassCondition(condition *PassConditionData) error {
 
 // MetaData represents additional metadata for the level
 type MetaData struct {
-	Description string                 `json:"description"`
-	Tags        []string               `json:"tags"`
-	Difficulty  int                    `json:"difficulty"` // 1-5 scale
-	Resources   []string               `json:"resources"`  // URLs or file paths
-	Custom      map[string]interface{} `json:"custom"`     // Custom fields
+	Description string         `json:"description"`
+	Tags        []string       `json:"tags"`
+	Difficulty  int            `json:"difficulty"` // 1-5 scale
+	Resources   []string       `json:"resources"`  // URLs or file paths
+	Custom      map[string]any `json:"custom"`     // Custom fields
 }
 
 // GetMetaData parses and returns the metadata
@@ -118,13 +118,13 @@ func (q *Question) BeforeCreate(tx *gorm.DB) error {
 
 // QuestionContent represents the structure of question content JSON
 type QuestionContent struct {
-	Type        string                 `json:"type"`        // "multiple_choice", "text", "code", etc.
-	Text        string                 `json:"text"`        // Question text
-	Options     []string               `json:"options"`     // For multiple choice
-	Code        string                 `json:"code"`        // For code questions
-	Images      []string               `json:"images"`      // Image URLs
-	Attachments []string               `json:"attachments"` // File URLs
-	Metadata    map[string]interface{} `json:"metadata"`    // Additional data
+	Type        string         `json:"type"`        // "multiple_choice", "text", "code", etc.
+	Text        string         `json:"text"`        // Question text
+	Options     []string       `json:"options"`     // For multiple choice
+	Code        string         `json:"code"`        // For code questions
+	Images      []string       `json:"images"`      // Image URLs
+	Attachments []string       `json:"attachments"` // File URLs
+	Metadata    map[string]any `json:"metadata"`    // Additional data
 }
 
 // GetContent parses and returns the question content
@@ -148,14 +148,14 @@ func (q *Question) SetContent(content *QuestionContent) error {
 
 // QuestionAnswer represents the structure of answer JSON
 type QuestionAnswer struct {
-	Type           string                 `json:"type"`            // "single", "multiple", "text", "code"
-	CorrectOptions []string               `json:"correct_options"` // For multiple choice
-	CorrectText    string                 `json:"correct_text"`    // For text answers
-	CorrectCode    string                 `json:"correct_code"`    // For code answers
-	Explanation    string                 `json:"explanation"`     // Answer explanation
-	Keywords       []string               `json:"keywords"`        // For text matching
-	CaseSensitive  bool                   `json:"case_sensitive"`  // For text answers
-	Metadata       map[string]interface{} `json:"metadata"`        // Additional data
+	Type           string         `json:"type"`            // "single", "multiple", "text", "code"
+	CorrectOptions []string       `json:"correct_options"` // For multiple choice
+	CorrectText    string         `json:"correct_text"`    // For text answers
+	CorrectCode    string         `json:"correct_code"`    // For code answers
+	Explanation    string         `json:"explanation"`     // Answer explanation
+	Keywords       []string       `json:"keywords"`        // For text matching
+	CaseSensitive  bool           `json:"case_sensitive"`  // For text answers
+	Metadata       map[string]any `json:"metadata"`        // Additional data
 }
 
 // GetAnswer parses and returns the question answer

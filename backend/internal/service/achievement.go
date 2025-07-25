@@ -2,14 +2,13 @@ package service
 
 import (
 	"fmt"
+	"paperplay/internal/model"
+	"paperplay/internal/websocket"
 	"strconv"
 	"time"
 
 	"go.uber.org/zap"
 	"gorm.io/gorm"
-
-	"paperplay/internal/model"
-	"paperplay/internal/websocket"
 )
 
 // AchievementService handles achievement evaluation and management
@@ -216,7 +215,7 @@ func (s *AchievementService) evaluateMemoryAchievement(userID string, rule *mode
 
 // evaluateCondition evaluates a single condition against user stats
 func (s *AchievementService) evaluateCondition(stats *model.UserAttempts, condition model.ConditionRule) bool {
-	var value interface{}
+	var value any
 
 	// Get the field value from stats
 	switch condition.Field {
@@ -255,7 +254,7 @@ func (s *AchievementService) evaluateCondition(stats *model.UserAttempts, condit
 }
 
 // compareValues compares two values using the specified operator
-func (s *AchievementService) compareValues(actual interface{}, operator string, expected interface{}) bool {
+func (s *AchievementService) compareValues(actual any, operator string, expected any) bool {
 	switch operator {
 	case ">=":
 		return s.numericCompare(actual, expected) >= 0
@@ -276,7 +275,7 @@ func (s *AchievementService) compareValues(actual interface{}, operator string, 
 }
 
 // numericCompare compares two numeric values, returns -1, 0, or 1
-func (s *AchievementService) numericCompare(a, b interface{}) int {
+func (s *AchievementService) numericCompare(a, b any) int {
 	af := s.toFloat64(a)
 	bf := s.toFloat64(b)
 
@@ -289,7 +288,7 @@ func (s *AchievementService) numericCompare(a, b interface{}) int {
 }
 
 // toFloat64 converts various numeric types to float64
-func (s *AchievementService) toFloat64(v interface{}) float64 {
+func (s *AchievementService) toFloat64(v any) float64 {
 	switch val := v.(type) {
 	case int:
 		return float64(val)
@@ -330,7 +329,7 @@ func (s *AchievementService) awardAchievement(userID string, achievement *model.
 			EventType: model.EventAchievementEarned,
 		}
 
-		eventData := map[string]interface{}{
+		eventData := map[string]any{
 			"achievement_id":   achievement.ID,
 			"achievement_name": achievement.Name,
 			"level":            achievement.Level,
@@ -424,7 +423,7 @@ func (s *AchievementService) createAchievementNFT(tx *gorm.DB, userID string, ac
 		mintRequest := NFTMintRequest{
 			ToAddress: user.EthAddress,
 			TokenURI:  metadataURI,
-			Metadata: map[string]interface{}{
+			Metadata: map[string]any{
 				"achievement_id": achievement.ID,
 				"user_id":        userID,
 			},
@@ -457,7 +456,7 @@ func (s *AchievementService) createAchievementNFT(tx *gorm.DB, userID string, ac
 }
 
 // EvaluateOnEvent evaluates achievements when specific events occur
-func (s *AchievementService) EvaluateOnEvent(userID string, eventType string, eventData map[string]interface{}) error {
+func (s *AchievementService) EvaluateOnEvent(userID string, eventType string, eventData map[string]any) error {
 	// Update user stats based on event
 	if err := s.updateUserStatsFromEvent(userID, eventType, eventData); err != nil {
 		s.logger.Error("Failed to update user stats from event",
@@ -472,7 +471,7 @@ func (s *AchievementService) EvaluateOnEvent(userID string, eventType string, ev
 }
 
 // updateUserStatsFromEvent updates user statistics based on events
-func (s *AchievementService) updateUserStatsFromEvent(userID string, eventType string, eventData map[string]interface{}) error {
+func (s *AchievementService) updateUserStatsFromEvent(userID string, eventType string, eventData map[string]any) error {
 	stats, err := model.GetTodayStats(s.db, userID)
 	if err != nil {
 		return fmt.Errorf("failed to get today's stats: %w", err)
@@ -508,7 +507,6 @@ func (s *AchievementService) calculateCurrentStreak(userID string) int {
 		Order("stat_date DESC").
 		Limit(30). // Look at last 30 days
 		Find(&attempts).Error
-
 	if err != nil {
 		s.logger.Error("Failed to get user attempts for streak calculation", zap.Error(err))
 		return 0
@@ -543,7 +541,6 @@ func (s *AchievementService) GetUserAchievements(userID string) ([]model.UserAch
 		Preload("Achievement").
 		Order("earned_at DESC").
 		Find(&achievements).Error
-
 	if err != nil {
 		return nil, fmt.Errorf("failed to get user achievements: %w", err)
 	}
@@ -557,7 +554,6 @@ func (s *AchievementService) GetAllAchievements() ([]model.Achievement, error) {
 	err := s.db.Where("is_active = ?", true).
 		Order("level ASC, created_at ASC").
 		Find(&achievements).Error
-
 	if err != nil {
 		return nil, fmt.Errorf("failed to get achievements: %w", err)
 	}

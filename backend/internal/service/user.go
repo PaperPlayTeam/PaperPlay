@@ -2,11 +2,10 @@ package service
 
 import (
 	"fmt"
+	"paperplay/internal/model"
 	"time"
 
 	"gorm.io/gorm"
-
-	"paperplay/internal/model"
 )
 
 // UserService handles user business logic
@@ -368,7 +367,7 @@ func (s *UserService) CreateOrUpdateProgress(userID, levelID string, status int,
 	}
 
 	// Update existing progress
-	updates := map[string]interface{}{
+	updates := map[string]any{
 		"status":          status,
 		"score":           score,
 		"stars":           stars,

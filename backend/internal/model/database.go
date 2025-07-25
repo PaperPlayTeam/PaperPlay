@@ -229,16 +229,16 @@ func (d *Database) BeginTransaction() *gorm.DB {
 }
 
 // GetStats returns database statistics
-func (d *Database) GetStats() map[string]interface{} {
+func (d *Database) GetStats() map[string]any {
 	sqlDB, err := d.DB.DB()
 	if err != nil {
-		return map[string]interface{}{
+		return map[string]any{
 			"error": err.Error(),
 		}
 	}
 
 	stats := sqlDB.Stats()
-	return map[string]interface{}{
+	return map[string]any{
 		"open_connections":     stats.OpenConnections,
 		"in_use":               stats.InUse,
 		"idle":                 stats.Idle,

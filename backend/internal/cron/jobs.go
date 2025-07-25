@@ -2,16 +2,15 @@ package cron
 
 import (
 	"fmt"
+	"paperplay/config"
+	"paperplay/internal/model"
+	"paperplay/internal/service"
+	"paperplay/internal/websocket"
 	"time"
 
 	"github.com/robfig/cron/v3"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
-
-	"paperplay/config"
-	"paperplay/internal/model"
-	"paperplay/internal/service"
-	"paperplay/internal/websocket"
 )
 
 // JobManager handles all scheduled jobs
@@ -410,19 +409,19 @@ func (jm *JobManager) calculateWeeklyReport(stats []model.UserAttempts) *WeeklyR
 }
 
 // GetJobStats returns statistics about job execution
-func (jm *JobManager) GetJobStats() map[string]interface{} {
+func (jm *JobManager) GetJobStats() map[string]any {
 	entries := jm.cron.Entries()
 
-	jobs := make([]map[string]interface{}, len(entries))
+	jobs := make([]map[string]any, len(entries))
 	for i, entry := range entries {
-		jobs[i] = map[string]interface{}{
+		jobs[i] = map[string]any{
 			"id":       entry.ID,
 			"next_run": entry.Next,
 			"prev_run": entry.Prev,
 		}
 	}
 
-	return map[string]interface{}{
+	return map[string]any{
 		"enabled":    jm.config.Enabled,
 		"total_jobs": len(entries),
 		"jobs":       jobs,

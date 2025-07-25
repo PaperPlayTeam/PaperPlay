@@ -3,14 +3,13 @@ package websocket
 import (
 	"encoding/json"
 	"net/http"
+	"paperplay/internal/middleware"
 	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"go.uber.org/zap"
-
-	"paperplay/internal/middleware"
 )
 
 // Hub maintains the set of active clients and broadcasts messages to the clients.
@@ -56,10 +55,10 @@ type Client struct {
 
 // Message represents a WebSocket message
 type Message struct {
-	Type      string      `json:"type"`
-	UserID    string      `json:"user_id,omitempty"`
-	Data      interface{} `json:"data"`
-	Timestamp time.Time   `json:"timestamp"`
+	Type      string    `json:"type"`
+	UserID    string    `json:"user_id,omitempty"`
+	Data      any       `json:"data"`
+	Timestamp time.Time `json:"timestamp"`
 }
 
 // NotificationMessage represents a notification message
@@ -197,7 +196,7 @@ func (h *Hub) Run() {
 }
 
 // BroadcastToAll sends a message to all connected clients
-func (h *Hub) BroadcastToAll(messageType string, data interface{}) {
+func (h *Hub) BroadcastToAll(messageType string, data any) {
 	message := Message{
 		Type:      messageType,
 		Data:      data,
@@ -216,7 +215,7 @@ func (h *Hub) BroadcastToAll(messageType string, data interface{}) {
 }
 
 // SendToUser sends a message to a specific user
-func (h *Hub) SendToUser(userID string, messageType string, data interface{}) {
+func (h *Hub) SendToUser(userID string, messageType string, data any) {
 	h.mu.RLock()
 	clients, exists := h.userClients[userID]
 	h.mu.RUnlock()
@@ -277,11 +276,11 @@ func (h *Hub) GetConnectedUsers() []string {
 }
 
 // GetStats returns hub statistics
-func (h *Hub) GetStats() map[string]interface{} {
+func (h *Hub) GetStats() map[string]any {
 	h.mu.RLock()
 	defer h.mu.RUnlock()
 
-	return map[string]interface{}{
+	return map[string]any{
 		"total_clients":     len(h.clients),
 		"connected_users":   len(h.userClients),
 		"broadcast_backlog": len(h.broadcast),
@@ -394,7 +393,7 @@ func (c *Client) writePump() {
 
 // handleMessage processes incoming messages from clients
 func (c *Client) handleMessage(message []byte) {
-	var msg map[string]interface{}
+	var msg map[string]any
 	if err := json.Unmarshal(message, &msg); err != nil {
 		c.hub.logger.Warn("Failed to unmarshal client message", zap.Error(err))
 		return

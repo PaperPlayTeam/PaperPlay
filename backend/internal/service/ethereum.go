@@ -5,15 +5,14 @@ import (
 	"crypto/ecdsa"
 	"fmt"
 	"math/big"
+	"paperplay/config"
+	"paperplay/internal/model"
 	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
-
-	"paperplay/config"
-	"paperplay/internal/model"
 )
 
 // EthereumService handles Ethereum blockchain operations
@@ -99,9 +98,9 @@ func (s *EthereumService) GetBalance(address string) (*big.Int, error) {
 
 // NFTMintRequest represents an NFT minting request
 type NFTMintRequest struct {
-	ToAddress string                 `json:"to_address"`
-	TokenURI  string                 `json:"token_uri"`
-	Metadata  map[string]interface{} `json:"metadata"`
+	ToAddress string         `json:"to_address"`
+	TokenURI  string         `json:"token_uri"`
+	Metadata  map[string]any `json:"metadata"`
 }
 
 // NFTMintResult represents the result of NFT minting
@@ -211,9 +210,9 @@ func (s *EthereumService) GenerateMetadataURI(achievement *model.Achievement, us
 }
 
 // GetNetworkInfo returns information about the connected network
-func (s *EthereumService) GetNetworkInfo() (map[string]interface{}, error) {
+func (s *EthereumService) GetNetworkInfo() (map[string]any, error) {
 	if !s.enabled {
-		return map[string]interface{}{
+		return map[string]any{
 			"enabled": false,
 		}, nil
 	}
@@ -228,7 +227,7 @@ func (s *EthereumService) GetNetworkInfo() (map[string]interface{}, error) {
 		return nil, fmt.Errorf("failed to get latest block: %w", err)
 	}
 
-	return map[string]interface{}{
+	return map[string]any{
 		"enabled":          true,
 		"network_url":      s.config.NetworkURL,
 		"chain_id":         chainID.String(),
@@ -240,9 +239,9 @@ func (s *EthereumService) GetNetworkInfo() (map[string]interface{}, error) {
 }
 
 // HealthCheck checks the health of Ethereum service
-func (s *EthereumService) HealthCheck() map[string]interface{} {
+func (s *EthereumService) HealthCheck() map[string]any {
 	if !s.enabled {
-		return map[string]interface{}{
+		return map[string]any{
 			"status":  "disabled",
 			"enabled": false,
 		}
@@ -251,14 +250,14 @@ func (s *EthereumService) HealthCheck() map[string]interface{} {
 	// Check if we can connect to the network
 	_, err := s.client.NetworkID(context.Background())
 	if err != nil {
-		return map[string]interface{}{
+		return map[string]any{
 			"status":  "unhealthy",
 			"enabled": true,
 			"error":   err.Error(),
 		}
 	}
 
-	return map[string]interface{}{
+	return map[string]any{
 		"status":  "healthy",
 		"enabled": true,
 	}

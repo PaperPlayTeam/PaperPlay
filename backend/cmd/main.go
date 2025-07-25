@@ -124,11 +124,11 @@ func main() {
 
 	// Health check endpoint
 	router.GET("/health", func(c *gin.Context) {
-		healthStatus := map[string]interface{}{
+		healthStatus := map[string]any{
 			"status":    "healthy",
 			"timestamp": time.Now().UTC(),
 			"version":   "1.0.0",
-			"services": map[string]interface{}{
+			"services": map[string]any{
 				"database":     db.Health() == nil,
 				"ethereum":     ethService != nil && ethService.HealthCheck()["status"] == "healthy",
 				"websocket":    len(wsHub.GetConnectedUsers()) >= 0,
@@ -227,7 +227,7 @@ func setupAPIRoutes(
 		{
 			ws.GET("/stats", func(c *gin.Context) {
 				stats := wsHub.GetStats()
-				c.JSON(http.StatusOK, map[string]interface{}{
+				c.JSON(http.StatusOK, map[string]any{
 					"success": true,
 					"data":    stats,
 				})
@@ -248,7 +248,7 @@ func setupAPIRoutes(
 					return
 				}
 
-				c.JSON(http.StatusOK, map[string]interface{}{
+				c.JSON(http.StatusOK, map[string]any{
 					"success": true,
 					"data":    allAchievements,
 				})
@@ -267,7 +267,7 @@ func setupAPIRoutes(
 					return
 				}
 
-				c.JSON(http.StatusOK, map[string]interface{}{
+				c.JSON(http.StatusOK, map[string]any{
 					"success": true,
 					"data":    userAchievements,
 				})
@@ -286,7 +286,7 @@ func setupAPIRoutes(
 					return
 				}
 
-				c.JSON(http.StatusOK, map[string]interface{}{
+				c.JSON(http.StatusOK, map[string]any{
 					"success": true,
 					"message": "Achievement evaluation completed",
 				})
@@ -297,12 +297,12 @@ func setupAPIRoutes(
 		system := protected.Group("/system")
 		{
 			system.GET("/stats", func(c *gin.Context) {
-				stats := map[string]interface{}{
+				stats := map[string]any{
 					"websocket": wsHub.GetStats(),
-					"database":  map[string]interface{}{"healthy": true},
+					"database":  map[string]any{"healthy": true},
 				}
 
-				c.JSON(http.StatusOK, map[string]interface{}{
+				c.JSON(http.StatusOK, map[string]any{
 					"success": true,
 					"data":    stats,
 				})

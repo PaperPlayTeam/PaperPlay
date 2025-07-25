@@ -2,15 +2,14 @@ package api
 
 import (
 	"net/http"
+	"paperplay/internal/middleware"
+	"paperplay/internal/model"
+	"paperplay/internal/service"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"gorm.io/gorm"
-
-	"paperplay/internal/middleware"
-	"paperplay/internal/model"
-	"paperplay/internal/service"
 )
 
 // UserHandler handles user-related HTTP requests
@@ -67,16 +66,16 @@ type AuthResponse struct {
 
 // ErrorResponse represents error response
 type ErrorResponse struct {
-	Error   string      `json:"error"`
-	Message string      `json:"message"`
-	Details interface{} `json:"details,omitempty"`
+	Error   string `json:"error"`
+	Message string `json:"message"`
+	Details any    `json:"details,omitempty"`
 }
 
 // SuccessResponse represents success response
 type SuccessResponse struct {
-	Success bool        `json:"success"`
-	Message string      `json:"message"`
-	Data    interface{} `json:"data,omitempty"`
+	Success bool   `json:"success"`
+	Message string `json:"message"`
+	Data    any    `json:"data,omitempty"`
 }
 
 // Register handles user registration
@@ -342,7 +341,7 @@ func (h *UserHandler) UpdateProfile(c *gin.Context) {
 	}
 
 	// Update user fields
-	updates := make(map[string]interface{})
+	updates := make(map[string]any)
 	if updateReq.DisplayName != "" {
 		updates["display_name"] = updateReq.DisplayName
 	}

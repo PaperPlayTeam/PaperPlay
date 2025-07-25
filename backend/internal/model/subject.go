@@ -81,7 +81,6 @@ func (rn *RoadmapNode) GetNextSortOrder(db *gorm.DB) (int, error) {
 		Where("parent_id = ?", rn.ID).
 		Select("COALESCE(MAX(sort_order), 0)").
 		Scan(&maxOrder).Error
-
 	if err != nil {
 		return 0, err
 	}
@@ -128,7 +127,6 @@ func (s *RoadmapNodeService) GetSubjectRoadmap(subjectID string) ([]RoadmapNode,
 		Order("path ASC").
 		Preload("Level").
 		Find(&nodes).Error
-
 	if err != nil {
 		return nil, err
 	}
