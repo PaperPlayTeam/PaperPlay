@@ -1,0 +1,49 @@
+server:
+  port: "8080"
+  mode: "debug"  # debug, release, test
+  read_timeout: 30
+  write_timeout: 30
+  idle_timeout: 120
+
+database:
+  driver: "sqlite3"
+  dsn: "./data/paperplay.db"
+  max_idle_conns: 10
+  max_open_conns: 100
+  conn_max_lifetime: 3600
+
+jwt:
+  secret_key: "3fd052b88182d48dcb0135b5b753b6c62a37aca169edb00a3ec3b590d0aefce8"
+  access_token_duration: 15  # minutes
+  refresh_token_duration: 7  # days
+
+ethereum:
+  enabled: false
+  network_url: "https://sepolia.infura.io/v3/your-project-id"
+  chain_id: 11155111  # Sepolia testnet
+  contract_address: ""
+  private_key: ""
+  gas_limit: 100000
+  gas_price: 20000000000  # 20 Gwei
+
+websocket:
+  read_buffer_size: 1024
+  write_buffer_size: 1024
+  ping_period: 54  # seconds
+
+log:
+  level: "info"  # debug, info, warn, error
+  output_path: "./logs/app.log"
+  max_size: 100  # MB
+  max_age: 7     # days
+  max_backups: 3 # files
+
+prometheus:
+  enabled: true
+  path: "/metrics"
+
+cron:
+  enabled: true
+  stats_update_spec: "0 2 * * *"      # Daily at 2 AM
+  report_generation_spec: "0 3 * * 0" # Weekly on Sunday at 3 AM
+  achievement_check_spec: "*/5 * * * *" # Every 5 minutes 
