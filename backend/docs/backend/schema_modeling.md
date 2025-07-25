@@ -27,16 +27,17 @@
 
 **levels**
 
-| 列名                    | 类型    | 约束                       | 说明          |
-| ----------------------- | ------- | -------------------------- | ------------- |
-| id                      | TEXT    | PK UUID                   | 关卡主键      |
-| paper_id                | TEXT    | UNIQUE FK → papers(id) | 对应论文      |
-| name                    | TEXT    | NOT NULL                  | 关卡标题      |
-| pass_condition          | TEXT    | NOT NULL                  | 通关条件 JSON |
-| meta_json               | TEXT    |                            | 其他元数据    |
-| x                       | INTEGER | NOT NULL                   | UI上的横坐标  |
-| y                       | INTEGER | NOT NULL                   | UI上的纵坐标  |
-| created_at / updated_at | INTEGER |                            |               |
+| 列名                    | 类型    | 约束                       | 说明           |
+| ----------------------- | ------- | -------------------------- | -------------- |
+| id                      | TEXT    | PK UUID                   | 关卡主键       |
+| paper_id                | TEXT    | UNIQUE FK → papers(id) | 对应论文       |
+| name                    | TEXT    | NOT NULL                  | 关卡标题       |
+| pass_condition          | TEXT    | NOT NULL                  | 通关条件 JSON  |
+| locked                  | BOOLEAN | NOT NULL                   | 关卡是否被锁住 |
+| meta_json               | TEXT    |                            | 其他元数据     |
+| x                       | INTEGER | NOT NULL                   | UI上的横坐标   |
+| y                       | INTEGER | NOT NULL                   | UI上的纵坐标   |
+| created_at / updated_at | INTEGER |                            |                |
 
 **questions**
 
