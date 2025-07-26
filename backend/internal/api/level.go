@@ -2,14 +2,13 @@ package api
 
 import (
 	"net/http"
+	"paperplay/internal/middleware"
+	"paperplay/internal/model"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"gorm.io/gorm"
-
-	"paperplay/internal/middleware"
-	"paperplay/internal/model"
 )
 
 // LevelHandler handles level system HTTP requests
@@ -28,9 +27,9 @@ func NewLevelHandler(db *gorm.DB) *LevelHandler {
 
 // SubmitAnswerRequest represents answer submission request
 type SubmitAnswerRequest struct {
-	QuestionID string      `json:"question_id" validate:"required,uuid"`
-	AnswerJSON interface{} `json:"answer_json" validate:"required"`
-	DurationMS int         `json:"duration_ms" validate:"min=0"`
+	QuestionID string `json:"question_id" validate:"required,uuid"`
+	AnswerJSON any    `json:"answer_json" validate:"required"`
+	DurationMS int    `json:"duration_ms" validate:"min=0"`
 }
 
 // SubmitAnswerResponse represents answer submission response
@@ -296,9 +295,9 @@ func (h *LevelHandler) GetLevelQuestions(c *gin.Context) {
 	}
 
 	// For security, don't expose answer_json to students
-	questionsResponse := make([]map[string]interface{}, len(questions))
+	questionsResponse := make([]map[string]any, len(questions))
 	for i, q := range questions {
-		questionsResponse[i] = map[string]interface{}{
+		questionsResponse[i] = map[string]any{
 			"id":           q.ID,
 			"level_id":     q.LevelID,
 			"stem":         q.Stem,
@@ -338,7 +337,7 @@ func (h *LevelHandler) GetQuestion(c *gin.Context) {
 	}
 
 	// For security, don't expose answer_json to students
-	questionResponse := map[string]interface{}{
+	questionResponse := map[string]any{
 		"id":           question.ID,
 		"level_id":     question.LevelID,
 		"stem":         question.Stem,
@@ -390,9 +389,9 @@ func (h *LevelHandler) GetSubjectRoadmap(c *gin.Context) {
 	}
 
 	// Simplify response structure for API
-	roadmapResponse := make([]map[string]interface{}, len(roadmap))
+	roadmapResponse := make([]map[string]any, len(roadmap))
 	for i, node := range roadmap {
-		roadmapResponse[i] = map[string]interface{}{
+		roadmapResponse[i] = map[string]any{
 			"id":         node.ID,
 			"subject_id": node.SubjectID,
 			"level_id":   node.LevelID,
@@ -479,7 +478,7 @@ func (h *LevelHandler) StartLevel(c *gin.Context) {
 	c.JSON(http.StatusOK, SuccessResponse{
 		Success: true,
 		Message: "Level started",
-		Data: map[string]interface{}{
+		Data: map[string]any{
 			"user_id":    progress.UserID,
 			"level_id":   progress.LevelID,
 			"status":     progress.Status,
@@ -656,7 +655,7 @@ func (h *LevelHandler) CompleteLevel(c *gin.Context) {
 	c.JSON(http.StatusOK, SuccessResponse{
 		Success: true,
 		Message: "Level completed",
-		Data: map[string]interface{}{
+		Data: map[string]any{
 			"user_id":      progress.UserID,
 			"level_id":     progress.LevelID,
 			"score":        progress.Score,

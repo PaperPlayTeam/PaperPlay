@@ -105,6 +105,8 @@ func main() {
 	// Initialize API handlers
 	userHandler := api.NewUserHandler(db.DB, jwtService, userService, ethService)
 	levelHandler := api.NewLevelHandler(db.DB)
+	achievementHandler := api.NewAchievementHandler(db.DB, achievementService, metricsService, wsHub)
+	systemHandler := api.NewSystemHandler(db.DB, metricsService, wsHub)
 
 	// Setup Gin router
 	if cfg.Server.Mode == "release" {
@@ -123,26 +125,11 @@ func main() {
 	}
 
 	// Health check endpoint
-	router.GET("/health", func(c *gin.Context) {
-		healthStatus := map[string]any{
-			"status":    "healthy",
-			"timestamp": time.Now().UTC(),
-			"version":   "1.0.0",
-			"services": map[string]any{
-				"database":     db.Health() == nil,
-				"ethereum":     ethService != nil && ethService.HealthCheck()["status"] == "healthy",
-				"websocket":    len(wsHub.GetConnectedUsers()) >= 0,
-				"cron_jobs":    jobManager.GetJobStats(),
-				"achievements": achievementService != nil,
-			},
-		}
-
-		c.JSON(http.StatusOK, healthStatus)
-	})
+	router.GET("/health", systemHandler.GetHealth)
 
 	// Metrics endpoint
 	if cfg.Prometheus.Enabled {
-		router.GET(cfg.Prometheus.Path, metricsService.PrometheusHandler())
+		router.GET(cfg.Prometheus.Path, systemHandler.GetPrometheusMetrics)
 	}
 
 	// WebSocket endpoint
@@ -151,7 +138,7 @@ func main() {
 	})
 
 	// API routes
-	setupAPIRoutes(router, userHandler, levelHandler, jwtService, wsHub, achievementService)
+	setupAPIRoutes(router, userHandler, levelHandler, achievementHandler, jwtService, wsHub)
 
 	// Create HTTP server
 	server := &http.Server{
@@ -193,9 +180,9 @@ func setupAPIRoutes(
 	router *gin.Engine,
 	userHandler *api.UserHandler,
 	levelHandler *api.LevelHandler,
+	achievementHandler *api.AchievementHandler,
 	jwtService *middleware.JWTService,
 	wsHub *websocket.Hub,
-	achievementService *service.AchievementService,
 ) {
 	// API v1 group
 	v1 := router.Group("/api/v1")
@@ -225,88 +212,21 @@ func setupAPIRoutes(
 		// WebSocket connection info
 		ws := protected.Group("/ws")
 		{
-			ws.GET("/stats", func(c *gin.Context) {
-				stats := wsHub.GetStats()
-				c.JSON(http.StatusOK, map[string]any{
-					"success": true,
-					"data":    stats,
-				})
-			})
+			ws.GET("/stats", achievementHandler.GetWebSocketStats)
 		}
 
 		// Achievement system endpoints
 		achievements := protected.Group("/achievements")
 		{
-			achievements.GET("", func(c *gin.Context) {
-				// Get all available achievements
-				allAchievements, err := achievementService.GetAllAchievements()
-				if err != nil {
-					c.JSON(http.StatusInternalServerError, gin.H{
-						"error":   "failed_to_get_achievements",
-						"message": "Failed to retrieve achievements",
-					})
-					return
-				}
-
-				c.JSON(http.StatusOK, map[string]any{
-					"success": true,
-					"data":    allAchievements,
-				})
-			})
-
-			achievements.GET("/user", func(c *gin.Context) {
-				userID := c.GetString("user_id")
-
-				// Get user's achievements
-				userAchievements, err := achievementService.GetUserAchievements(userID)
-				if err != nil {
-					c.JSON(http.StatusInternalServerError, gin.H{
-						"error":   "failed_to_get_user_achievements",
-						"message": "Failed to retrieve user achievements",
-					})
-					return
-				}
-
-				c.JSON(http.StatusOK, map[string]any{
-					"success": true,
-					"data":    userAchievements,
-				})
-			})
-
-			achievements.POST("/evaluate", func(c *gin.Context) {
-				userID := c.GetString("user_id")
-
-				// Manually trigger achievement evaluation
-				err := achievementService.EvaluateUserAchievements(userID)
-				if err != nil {
-					c.JSON(http.StatusInternalServerError, gin.H{
-						"error":   "evaluation_failed",
-						"message": err.Error(),
-					})
-					return
-				}
-
-				c.JSON(http.StatusOK, map[string]any{
-					"success": true,
-					"message": "Achievement evaluation completed",
-				})
-			})
+			achievements.GET("", achievementHandler.GetAllAchievements)
+			achievements.GET("/user", achievementHandler.GetUserAchievements)
+			achievements.POST("/evaluate", achievementHandler.EvaluateAchievements)
 		}
 
 		// System stats (admin endpoints)
 		system := protected.Group("/system")
 		{
-			system.GET("/stats", func(c *gin.Context) {
-				stats := map[string]any{
-					"websocket": wsHub.GetStats(),
-					"database":  map[string]any{"healthy": true},
-				}
-
-				c.JSON(http.StatusOK, map[string]any{
-					"success": true,
-					"data":    stats,
-				})
-			})
+			system.GET("/stats", achievementHandler.GetSystemStats)
 		}
 
 		// Level System API endpoints

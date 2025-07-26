@@ -38,16 +38,16 @@ func (a *Achievement) BeforeCreate(tx *gorm.DB) error {
 
 // AchievementRule represents the structure of achievement rule JSON
 type AchievementRule struct {
-	Type       string                 `json:"type"`       // "streak", "score", "speed", "total", etc.
-	Conditions []ConditionRule        `json:"conditions"` // Multiple conditions (AND logic)
-	Metadata   map[string]interface{} `json:"metadata"`   // Additional rule data
+	Type       string          `json:"type"`       // "streak", "score", "speed", "total", etc.
+	Conditions []ConditionRule `json:"conditions"` // Multiple conditions (AND logic)
+	Metadata   map[string]any  `json:"metadata"`   // Additional rule data
 }
 
 // ConditionRule represents a single condition within an achievement rule
 type ConditionRule struct {
-	Field    string      `json:"field"`    // Field to check (e.g., "streak_days", "correct_rate")
-	Operator string      `json:"operator"` // ">=", ">", "<=", "<", "=", "!="
-	Value    interface{} `json:"value"`    // Value to compare against
+	Field    string `json:"field"`    // Field to check (e.g., "streak_days", "correct_rate")
+	Operator string `json:"operator"` // ">=", ">", "<=", "<", "=", "!="
+	Value    any    `json:"value"`    // Value to compare against
 }
 
 // GetRule parses and returns the achievement rule
@@ -71,17 +71,17 @@ func (a *Achievement) SetRule(rule *AchievementRule) error {
 
 // NFTMetadataTemplate represents NFT metadata structure
 type NFTMetadataTemplate struct {
-	Name        string                 `json:"name"`
-	Description string                 `json:"description"`
-	Image       string                 `json:"image"`
-	Attributes  []NFTAttribute         `json:"attributes"`
-	Properties  map[string]interface{} `json:"properties"`
+	Name        string         `json:"name"`
+	Description string         `json:"description"`
+	Image       string         `json:"image"`
+	Attributes  []NFTAttribute `json:"attributes"`
+	Properties  map[string]any `json:"properties"`
 }
 
 // NFTAttribute represents an NFT attribute
 type NFTAttribute struct {
-	TraitType string      `json:"trait_type"`
-	Value     interface{} `json:"value"`
+	TraitType string `json:"trait_type"`
+	Value     any    `json:"value"`
 }
 
 // GetNFTMetadata parses and returns the NFT metadata template
@@ -172,7 +172,7 @@ func (e *Event) BeforeCreate(tx *gorm.DB) error {
 }
 
 // EventData represents generic event data structure
-type EventData map[string]interface{}
+type EventData map[string]any
 
 // GetData parses and returns event data
 func (e *Event) GetData() (EventData, error) {
