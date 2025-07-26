@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"gorm.io/driver/sqlite"
@@ -13,7 +14,8 @@ import (
 
 // Database holds the database connection and provides methods for initialization
 type Database struct {
-	DB *gorm.DB
+	DB     *gorm.DB
+	DBPath string
 }
 
 // NewDatabase creates a new database instance
@@ -62,7 +64,68 @@ func NewDatabase(dsn string, logLevel string) (*Database, error) {
 	sqlDB.SetMaxOpenConns(100)
 	sqlDB.SetConnMaxLifetime(time.Hour)
 
-	return &Database{DB: db}, nil
+	return &Database{
+		DB:     db,
+		DBPath: dsn,
+	}, nil
+}
+
+// DatabaseExists checks if the database file already exists and has content
+func (d *Database) DatabaseExists() bool {
+	// Extract the actual file path from DSN
+	dbPath := d.DBPath
+	if strings.Contains(dbPath, "?") {
+		dbPath = strings.Split(dbPath, "?")[0]
+	}
+
+	if stat, err := os.Stat(dbPath); err == nil {
+		// File exists, check if it has content (more than 0 bytes)
+		// SQLite creates empty files when connecting, so we need to check size
+		return stat.Size() > 0
+	}
+	return false
+}
+
+// ValidateSchema validates that all required tables and columns exist
+func (d *Database) ValidateSchema() error {
+	log.Println("Validating database schema...")
+
+	// List of required tables and their critical columns
+	requiredSchema := map[string][]string{
+		"subjects":          {"id", "name", "description", "created_at", "updated_at"},
+		"papers":            {"id", "subject_id", "title", "paper_author", "created_at", "updated_at"},
+		"levels":            {"id", "paper_id", "name", "pass_condition", "created_at", "updated_at"},
+		"questions":         {"id", "level_id", "stem", "content_json", "answer_json", "created_at"},
+		"roadmap_nodes":     {"id", "subject_id", "level_id", "path", "sort"},
+		"users":             {"id", "email", "password_hash", "display_name", "created_at", "updated_at"},
+		"refresh_tokens":    {"id", "user_id", "token_hash", "expires_at", "created_at"},
+		"user_progresses":   {"id", "user_id", "level_id", "status", "score", "created_at", "updated_at"},
+		"user_attempts":     {"id", "user_id", "question_id", "level_id", "stat_date"},
+		"achievements":      {"id", "name", "description", "level", "badge_type", "is_active"},
+		"user_achievements": {"id", "user_id", "achievement_id", "earned_at", "nft_asset_id"},
+		"events":            {"id", "user_id", "event_type", "event_data", "created_at"},
+		"nft_assets":        {"id", "user_id", "token_id", "metadata_json", "status"},
+	}
+
+	for tableName, columns := range requiredSchema {
+		// Check if table exists
+		if !d.DB.Migrator().HasTable(tableName) {
+			return fmt.Errorf("CRITICAL ERROR: Required table '%s' does not exist in database. "+
+				"Database schema is incomplete. Please check your database file or allow initialization of a new database", tableName)
+		}
+
+		// Check if all required columns exist
+		for _, column := range columns {
+			if !d.DB.Migrator().HasColumn(tableName, column) {
+				return fmt.Errorf("CRITICAL ERROR: Required column '%s' does not exist in table '%s'. "+
+					"Database schema is incomplete or outdated. To protect existing data, the server will not start. "+
+					"Please manually update your database schema or backup your data and allow re-initialization", column, tableName)
+			}
+		}
+	}
+
+	log.Println("Database schema validation completed successfully")
+	return nil
 }
 
 // Migrate runs database migrations
@@ -95,6 +158,18 @@ func (d *Database) Migrate() error {
 
 	log.Println("Database migrations completed successfully")
 	return nil
+}
+
+// MigrateIfNew runs migrations only if this is a new database
+func (d *Database) MigrateIfNew() error {
+	if d.DatabaseExists() {
+		log.Println("Existing database detected. Skipping migrations to protect existing data.")
+		// Validate schema instead of migrating
+		return d.ValidateSchema()
+	}
+
+	log.Println("New database detected. Running full migrations...")
+	return d.Migrate()
 }
 
 // CreateIndexes creates additional indexes for performance
@@ -139,6 +214,17 @@ func (d *Database) Seed() error {
 
 	log.Println("Database seeding completed successfully")
 	return nil
+}
+
+// SeedIfNew runs seeding only if this is a new database
+func (d *Database) SeedIfNew() error {
+	if d.DatabaseExists() {
+		log.Println("Existing database detected. Skipping seeding to protect existing data.")
+		return nil
+	}
+
+	log.Println("New database detected. Running initial data seeding...")
+	return d.Seed()
 }
 
 // seedAchievements creates initial achievement definitions

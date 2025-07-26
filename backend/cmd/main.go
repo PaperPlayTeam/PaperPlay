@@ -13,6 +13,7 @@ import (
 	"paperplay/internal/model"
 	"paperplay/internal/service"
 	"paperplay/internal/websocket"
+	"strings"
 	"syscall"
 	"time"
 
@@ -35,6 +36,22 @@ func main() {
 
 	logger.GetSugar().Info("Starting PaperPlay backend server...")
 
+	// Check if database exists before connecting
+	dbPath := cfg.Database.DSN
+	if strings.Contains(dbPath, "?") {
+		dbPath = strings.Split(dbPath, "?")[0]
+	}
+
+	var isNewDatabase bool
+	if stat, err := os.Stat(dbPath); err != nil || stat.Size() == 0 {
+		isNewDatabase = true
+		logger.GetSugar().Info("No existing database found. Will create new database at: %s", cfg.Database.DSN)
+	} else {
+		isNewDatabase = false
+		logger.GetSugar().Info("Existing database detected at: %s", cfg.Database.DSN)
+		logger.GetSugar().Info("Database will be validated but NOT modified to protect existing data")
+	}
+
 	// Initialize database
 	db, err := model.NewDatabase(cfg.Database.DSN, cfg.Log.Level)
 	if err != nil {
@@ -42,9 +59,17 @@ func main() {
 	}
 	defer db.Close()
 
-	// Run database migrations
-	if err := db.Migrate(); err != nil {
-		logger.GetSugar().Fatalf("Failed to migrate database: %v", err)
+	// Run database migrations (safe for existing databases)
+	if isNewDatabase {
+		logger.GetSugar().Info("Running full database migrations for new database...")
+		if err := db.Migrate(); err != nil {
+			logger.GetSugar().Fatalf("Failed to migrate database: %v", err)
+		}
+	} else {
+		logger.GetSugar().Info("Validating existing database schema...")
+		if err := db.ValidateSchema(); err != nil {
+			logger.GetSugar().Fatalf("Failed to validate database: %v", err)
+		}
 	}
 
 	// Create additional indexes
@@ -52,9 +77,14 @@ func main() {
 		logger.GetSugar().Fatalf("Failed to create database indexes: %v", err)
 	}
 
-	// Seed initial data
-	if err := db.Seed(); err != nil {
-		logger.GetSugar().Fatalf("Failed to seed database: %v", err)
+	// Seed initial data (only for new databases)
+	if isNewDatabase {
+		logger.GetSugar().Info("Seeding initial data for new database...")
+		if err := db.Seed(); err != nil {
+			logger.GetSugar().Fatalf("Failed to seed database: %v", err)
+		}
+	} else {
+		logger.GetSugar().Info("Skipping data seeding for existing database to protect existing data")
 	}
 
 	// Initialize services
