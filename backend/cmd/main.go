@@ -251,6 +251,7 @@ func setupAPIRoutes(
 			achievements.GET("", achievementHandler.GetAllAchievements)
 			achievements.GET("/user", achievementHandler.GetUserAchievements)
 			achievements.POST("/evaluate", achievementHandler.EvaluateAchievements)
+			achievements.POST("/force-award", achievementHandler.ForceAwardAchievement)
 		}
 
 		// System stats (admin endpoints)
@@ -285,6 +286,7 @@ func setupAPIRoutes(
 
 		questions := protected.Group("/questions")
 		{
+			questions.GET("", levelHandler.GetAllQuestions) // 新增：获取所有问题
 			questions.GET("/:question_id", levelHandler.GetQuestion)
 		}
 

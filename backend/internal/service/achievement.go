@@ -78,6 +78,39 @@ func (s *AchievementService) EvaluateUserAchievements(userID string) error {
 	return nil
 }
 
+// ForceAwardAchievement awards a specific achievement to a user without checking rules
+func (s *AchievementService) ForceAwardAchievement(userID, achievementID string) error {
+	// Get the achievement
+	var achievement model.Achievement
+	if err := s.db.Where("id = ?", achievementID).First(&achievement).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return fmt.Errorf("achievement not found")
+		}
+		return fmt.Errorf("failed to get achievement: %w", err)
+	}
+
+	// Check if user already has this achievement
+	var userAchievement model.UserAchievement
+	if err := s.db.Where("user_id = ? AND achievement_id = ?", userID, achievementID).First(&userAchievement).Error; err == nil {
+		return fmt.Errorf("user already has this achievement")
+	} else if err != gorm.ErrRecordNotFound {
+		return fmt.Errorf("failed to check user achievement: %w", err)
+	}
+
+	// Award the achievement
+	if err := s.awardAchievement(userID, &achievement); err != nil {
+		return fmt.Errorf("failed to award achievement: %w", err)
+	}
+
+	s.logger.Info("Achievement force awarded",
+		zap.String("user_id", userID),
+		zap.String("achievement_id", achievementID),
+		zap.String("achievement_name", achievement.Name),
+	)
+
+	return nil
+}
+
 // evaluateAchievement checks if a user meets the criteria for an achievement
 func (s *AchievementService) evaluateAchievement(userID string, achievement *model.Achievement) (bool, error) {
 	rule, err := achievement.GetRule()

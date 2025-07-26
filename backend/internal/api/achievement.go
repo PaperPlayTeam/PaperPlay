@@ -148,7 +148,7 @@ func (h *AchievementHandler) GetUserAchievements(c *gin.Context) {
 	var response []UserAchievementResponse
 	for _, userAchievement := range userAchievements {
 		// Get event data from related events if available
-		var eventData map[string]interface{}
+		var eventData map[string]any
 		var event model.Event
 		if err := h.db.Where("user_id = ? AND event_type = ? AND created_at BETWEEN ? AND ?",
 			userID, model.EventAchievementEarned,
@@ -204,6 +204,53 @@ func (h *AchievementHandler) EvaluateAchievements(c *gin.Context) {
 	})
 }
 
+// ForceAwardRequest represents request for force awarding an achievement
+type ForceAwardRequest struct {
+	AchievementID string `json:"achievement_id" validate:"required"`
+}
+
+// ForceAwardAchievement handles POST /api/v1/achievements/force-award
+func (h *AchievementHandler) ForceAwardAchievement(c *gin.Context) {
+	userID := middleware.MustGetCurrentUserID(c)
+
+	var req ForceAwardRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, ErrorResponse{
+			Error:   "invalid_request",
+			Message: "Invalid request body",
+			Details: err.Error(),
+		})
+		return
+	}
+
+	// Validate request
+	if err := h.validator.Struct(req); err != nil {
+		c.JSON(http.StatusBadRequest, ErrorResponse{
+			Error:   "validation_error",
+			Message: "Validation failed",
+			Details: err.Error(),
+		})
+		return
+	}
+
+	// Force award the specified achievement
+	err := h.achievementService.ForceAwardAchievement(userID, req.AchievementID)
+	if err != nil {
+		h.metricsService.RecordError("force_award_failed", "achievements")
+		c.JSON(http.StatusInternalServerError, ErrorResponse{
+			Error:   "force_award_failed",
+			Message: "Failed to force award achievement",
+			Details: err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, SuccessResponse{
+		Success: true,
+		Message: "成就强制颁发完成",
+	})
+}
+
 // GetWebSocketStats handles GET /api/v1/ws/stats
 func (h *AchievementHandler) GetWebSocketStats(c *gin.Context) {
 	if h.wsHub == nil {
@@ -224,13 +271,13 @@ func (h *AchievementHandler) GetWebSocketStats(c *gin.Context) {
 
 // GetSystemStats handles GET /api/v1/system/stats
 func (h *AchievementHandler) GetSystemStats(c *gin.Context) {
-	stats := make(map[string]interface{})
+	stats := make(map[string]any)
 
 	// WebSocket stats
 	if h.wsHub != nil {
 		stats["websocket"] = h.wsHub.GetStats()
 	} else {
-		stats["websocket"] = map[string]interface{}{
+		stats["websocket"] = map[string]any{
 			"status": "unavailable",
 		}
 	}
@@ -239,11 +286,11 @@ func (h *AchievementHandler) GetSystemStats(c *gin.Context) {
 	dbHealth, err := h.db.DB()
 	if err == nil && dbHealth != nil {
 		pingErr := dbHealth.Ping()
-		stats["database"] = map[string]interface{}{
+		stats["database"] = map[string]any{
 			"healthy": pingErr == nil,
 		}
 	} else {
-		stats["database"] = map[string]interface{}{
+		stats["database"] = map[string]any{
 			"healthy": false,
 		}
 	}

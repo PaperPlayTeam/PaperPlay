@@ -1,9 +1,12 @@
 package api
 
 import (
+	"fmt"
+	"math"
 	"net/http"
 	"paperplay/internal/middleware"
 	"paperplay/internal/model"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -351,6 +354,99 @@ func (h *LevelHandler) GetQuestion(c *gin.Context) {
 		Success: true,
 		Message: "Question retrieved successfully",
 		Data:    questionResponse,
+	})
+}
+
+// GetAllQuestions handles GET /api/v1/questions
+func (h *LevelHandler) GetAllQuestions(c *gin.Context) {
+	// Parse query parameters
+	page := 1
+	pageSize := 20
+	sortBy := "created_at"
+	sortOrder := "desc"
+
+	if p := c.Query("page"); p != "" {
+		if val, err := strconv.Atoi(p); err == nil && val > 0 {
+			page = val
+		}
+	}
+
+	if ps := c.Query("page_size"); ps != "" {
+		if val, err := strconv.Atoi(ps); err == nil && val > 0 && val <= 100 {
+			pageSize = val
+		}
+	}
+
+	if sb := c.Query("sort_by"); sb != "" {
+		allowedFields := map[string]bool{
+			"created_at": true,
+			"score":      true,
+			"level_id":   true,
+		}
+		if allowedFields[sb] {
+			sortBy = sb
+		}
+	}
+
+	if so := c.Query("sort_order"); so == "asc" {
+		sortOrder = "asc"
+	}
+
+	// Calculate offset
+	offset := (page - 1) * pageSize
+
+	// Get total count
+	var total int64
+	if err := h.db.Model(&model.Question{}).Count(&total).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, ErrorResponse{
+			Error:   "database_error",
+			Message: "Failed to count questions",
+			Details: err.Error(),
+		})
+		return
+	}
+
+	// Get questions with pagination and sorting
+	var questions []model.Question
+	if err := h.db.
+		Order(fmt.Sprintf("%s %s", sortBy, sortOrder)).
+		Offset(offset).
+		Limit(pageSize).
+		Find(&questions).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, ErrorResponse{
+			Error:   "database_error",
+			Message: "Failed to retrieve questions",
+			Details: err.Error(),
+		})
+		return
+	}
+
+	// Transform to response slice (omit answer_json)
+	resp := make([]map[string]any, len(questions))
+	for i, q := range questions {
+		resp[i] = map[string]any{
+			"id":           q.ID,
+			"level_id":     q.LevelID,
+			"stem":         q.Stem,
+			"content_json": q.ContentJSON,
+			"score":        q.Score,
+			"created_by":   q.CreatedBy,
+			"created_at":   q.CreatedAt,
+		}
+	}
+
+	c.JSON(http.StatusOK, SuccessResponse{
+		Success: true,
+		Message: "Questions retrieved successfully",
+		Data: map[string]any{
+			"total":       total,
+			"page":        page,
+			"page_size":   pageSize,
+			"total_pages": int(math.Ceil(float64(total) / float64(pageSize))),
+			"sort_by":     sortBy,
+			"sort_order":  sortOrder,
+			"questions":   resp,
+		},
 	})
 }
 

@@ -97,18 +97,26 @@ test_http_response() {
         curl_args+=(-d "$data")
     fi
 
+    # Save response to temporary file to avoid line break issues
     response=$(curl "${curl_args[@]}")
+    echo "$response" > /tmp/response.txt
+    
+    # Extract status code from last line
+    status_code=$(tail -n1 /tmp/response.txt)
+    
+    # Get response body (all lines except last)
+    response_body=$(head -n -1 /tmp/response.txt)
+    
+    # Clean up
+    rm -f /tmp/response.txt
 
-    http_code=$(echo "$response" | tail -n1)
-    body=$(echo "$response" | head -n -1)
-
-    if [ "$http_code" = "$expected_status" ]; then
-        print_success "$test_name (Status: $http_code)"
-        echo "$body"
-        return 0
+    if [ "$status_code" = "$expected_status" ]; then
+        print_success "$test_name (Status: $status_code)"
     else
-        print_error "$test_name (Expected: $expected_status, Got: $http_code)"
-        echo "Response: $body"
+        print_error "$test_name (Expected: $expected_status, Got: $status_code)"
+        if [ -n "$response_body" ]; then
+            echo "Response: $response_body"
+        fi
         return 1
     fi
 }
@@ -431,12 +439,33 @@ test_achievement_system() {
 
     # Get All Achievements
     test_http_response "$BASE_URL/api/v1/achievements" "GET" "" "$auth_header" "200" "GET /api/v1/achievements"
-
-    # Get User Achievements
+    
+    # Extract first achievement ID
+    achievement_id=$(echo "$response_body" | tr -d '\n' | jq -r '.data[0].id // empty')
+    if [ -z "$achievement_id" ]; then
+        echo -e "${RED}Error: Could not extract achievement ID from response${NC}"
+        echo -e "Response body: $(echo "$response_body" | tr -d '\n' | jq '.')"
+        return 1
+    fi
+    echo -e "Found achievement ID: $achievement_id"
+    
+    # Get User Achievements (before force award)
     test_http_response "$BASE_URL/api/v1/achievements/user" "GET" "" "$auth_header" "200" "GET /api/v1/achievements/user"
+    echo -e "User achievements before force award: $(echo "$response_body" | tr -d '\n' | jq -c '.data')"
+
+    # Force Award Achievement
+    test_data="{\"achievement_id\":\"$achievement_id\"}"
+    echo -e "Sending force award request with body: $test_data"
+    test_http_response "$BASE_URL/api/v1/achievements/force-award" "POST" "$test_data" "$auth_header" "200" "POST /api/v1/achievements/force-award"
+    echo -e "Force award response: $(echo "$response_body" | tr -d '\n' | jq -c '.')"
+
+    # Get User Achievements (after force award)
+    test_http_response "$BASE_URL/api/v1/achievements/user" "GET" "" "$auth_header" "200" "GET /api/v1/achievements/user"
+    echo -e "User achievements after force award: $(echo "$response_body" | tr -d '\n' | jq -c '.data')"
 
     # Trigger Achievement Evaluation
     test_http_response "$BASE_URL/api/v1/achievements/evaluate" "POST" "" "$auth_header" "200" "POST /api/v1/achievements/evaluate"
+    echo -e "Achievement evaluation response: $(echo "$response_body" | tr -d '\n' | jq -c '.')"
 
     echo ""
 }

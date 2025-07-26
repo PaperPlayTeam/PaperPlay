@@ -96,15 +96,15 @@ func (d *Database) ValidateSchema() error {
 		"papers":            {"id", "subject_id", "title", "paper_author", "created_at", "updated_at"},
 		"levels":            {"id", "paper_id", "name", "pass_condition", "created_at", "updated_at"},
 		"questions":         {"id", "level_id", "stem", "content_json", "answer_json", "created_at"},
-		"roadmap_nodes":     {"id", "subject_id", "level_id", "path", "sort"},
+		"roadmap_nodes":     {"id", "subject_id", "level_id", "path", "sort_order"},
 		"users":             {"id", "email", "password_hash", "display_name", "created_at", "updated_at"},
-		"refresh_tokens":    {"id", "user_id", "token_hash", "expires_at", "created_at"},
+		"refresh_tokens":    {"token", "user_id", "expires_at", "created_at"},
 		"user_progresses":   {"id", "user_id", "level_id", "status", "score", "created_at", "updated_at"},
-		"user_attempts":     {"id", "user_id", "question_id", "level_id", "stat_date"},
+		"user_attempts":     {"stat_date", "user_id", "attempts_total", "attempts_correct", "attempts_first_try_correct", "updated_at"},
 		"achievements":      {"id", "name", "description", "level", "badge_type", "is_active"},
-		"user_achievements": {"id", "user_id", "achievement_id", "earned_at", "nft_asset_id"},
-		"events":            {"id", "user_id", "event_type", "event_data", "created_at"},
-		"nft_assets":        {"id", "user_id", "token_id", "metadata_json", "status"},
+		"user_achievements": {"id", "user_id", "achievement_id", "earned_at", "progress"},
+		"events":            {"id", "user_id", "event_type", "data_json", "created_at"},
+		"nft_assets":        {"id", "user_id", "token_id", "metadata_uri", "status"},
 	}
 
 	for tableName, columns := range requiredSchema {

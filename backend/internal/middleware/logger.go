@@ -130,7 +130,7 @@ func (l *LoggerService) GinLogger() gin.HandlerFunc {
 
 // Recovery creates a Gin middleware for panic recovery with logging
 func (l *LoggerService) Recovery() gin.HandlerFunc {
-	return gin.CustomRecovery(func(c *gin.Context, recovered interface{}) {
+	return gin.CustomRecovery(func(c *gin.Context, recovered any) {
 		l.logger.Error("Panic recovered",
 			zap.String("method", c.Request.Method),
 			zap.String("path", c.Request.URL.Path),
@@ -148,7 +148,7 @@ func (l *LoggerService) Recovery() gin.HandlerFunc {
 }
 
 // LogUserAction logs user actions for audit trail
-func (l *LoggerService) LogUserAction(userID, action, resource string, metadata map[string]interface{}) {
+func (l *LoggerService) LogUserAction(userID, action, resource string, metadata map[string]any) {
 	fields := []zap.Field{
 		zap.String("user_id", userID),
 		zap.String("action", action),
@@ -166,7 +166,7 @@ func (l *LoggerService) LogUserAction(userID, action, resource string, metadata 
 }
 
 // LogSecurityEvent logs security-related events
-func (l *LoggerService) LogSecurityEvent(eventType, userID, description string, metadata map[string]interface{}) {
+func (l *LoggerService) LogSecurityEvent(eventType, userID, description string, metadata map[string]any) {
 	fields := []zap.Field{
 		zap.String("event_type", eventType),
 		zap.String("user_id", userID),
@@ -184,7 +184,7 @@ func (l *LoggerService) LogSecurityEvent(eventType, userID, description string, 
 }
 
 // LogError logs application errors
-func (l *LoggerService) LogError(err error, context string, metadata map[string]interface{}) {
+func (l *LoggerService) LogError(err error, context string, metadata map[string]any) {
 	fields := []zap.Field{
 		zap.Error(err),
 		zap.String("context", context),

@@ -45,7 +45,7 @@
 | ------------ | ------- | --------------------------------- | ---------- |
 | id           | TEXT    | PK UUID                           | 题目主键       |
 | level_id     | TEXT    | FK → levels(id) ON DELETE CASCADE | 所属关卡       |
-| subtitle     | TEXT    | NULL                              | 小标题        |
+| subtitle     | TEXT    |                                   | 小标题        |
 | stem         | TEXT    | NOT NULL                          | 题干         |
 | content_json | TEXT    | NOT NULL                          | 题面         |
 | answer_json  | TEXT    | NOT NULL                          | 标准答案       |
@@ -153,20 +153,20 @@ JWT就用 refresh tokens 解决了
 
 **achievements**
 
-|列名|类型|约束|描述|
-|---|---|---|---|
-|id|TEXT|PRIMARY KEY|成就唯一标识|
-|name|TEXT|NOT NULL|成就名称|
-|description|TEXT|NOT NULL|成就描述|
-|level|INTEGER|NOT NULL, DEFAULT 1|等级（1=Bronze, 2=Silver, 3=Gold）|
-|icon_url|TEXT||图标 URL|
-|badge_type|TEXT|NOT NULL|类别（learning、streak、speed 等）|
-|rule_json|TEXT|NOT NULL|触发规则（JSON）|
-|nft_enabled|BOOLEAN|DEFAULT FALSE|是否生成 NFT|
-|nft_metadata|TEXT||NFT 元数据模板（JSON）|
-|is_active|BOOLEAN|DEFAULT TRUE|是否启用|
-|created_at|DATETIME|NOT NULL|创建时间|
-|updated_at|DATETIME|NOT NULL|更新时间|
+| 列名           | 类型       | 约束                  | 描述                             |
+| ------------ | -------- | ------------------- | ------------------------------ |
+| id           | TEXT     | PRIMARY KEY         | 成就唯一标识                         |
+| name         | TEXT     | NOT NULL            | 成就名称                           |
+| description  | TEXT     | NOT NULL            | 成就描述                           |
+| level        | INTEGER  | NOT NULL, DEFAULT 1 | 等级（1=Bronze, 2=Silver, 3=Gold） |
+| icon_url     | TEXT     |                     | 图标 URL                         |
+| badge_type   | TEXT     | NOT NULL            | 类别（learning、streak、speed 等）    |
+| rule_json    | TEXT     | NOT NULL            | 触发规则（JSON）                     |
+| nft_enabled  | BOOLEAN  | DEFAULT FALSE       | 是否生成 NFT                       |
+| nft_metadata | TEXT     |                     | NFT 元数据模板（JSON）                |
+| is_active    | BOOLEAN  | DEFAULT TRUE        | 是否启用                           |
+| created_at   | DATETIME | NOT NULL            | 创建时间                           |
+| updated_at   | DATETIME | NOT NULL            | 更新时间                           |
 
 **user achievements**
 
@@ -207,12 +207,3 @@ JWT就用 refresh tokens 解决了
 | status           | TEXT    | NOT NULL DEFAULT 'pending'       | 状态：`pending`、`minted`、`failed`  |
 | created_at       | INTEGER | NOT NULL                         | 记录创建时间（Unix ms）                 |
 | updated_at       | INTEGER | NOT NULL                         | 最近更新时间（Unix ms）                 |
-
-| 成就名称      | 触发条件                                              | 描述                                  |
-| --------- | ------------------------------------------------- | ----------------------------------- |
-| **首战告捷**  | `attempts_first_try_correct ≥ 1`                  | 第一次作答即答对任意一道题目，获得“首战告捷”成就。          |
-| **连击达人**  | `streak_days ≥ 7`                                 | 连续 7 天都有学习记录，保持良好学习习惯，解锁“连击达人”。     |
-| **智速双全**  | `avg_duration_ms ≤ 30000 AND correct_rate ≥ 0.9`  | 平均每题秒答 ≤15 s 且正确率 ≥ 90%，获得“智速双全”徽章。 |
-| **持久战士**  | `total_time_ms ≥ 3600000`                         | 单日学习总时长 ≥ 1 小时，解锁“持久战士”勋章。          |
-| **零依赖提示** | `hint_used_count = 0 AND attempts_total ≥ 20`     | 当日答题 ≥ 20 道且从未使用提示，获得“零依赖提示”称号。     |
-| **记忆大师**  | `retention_score ≥ 0.85 AND review_due_count = 0` | 保留度 ≥ 85% 且当天无需复习推荐，获得“记忆大师”成就。     |
