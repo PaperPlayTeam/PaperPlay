@@ -311,7 +311,8 @@ func (h *SystemHandler) GetHealth(c *gin.Context) {
 
 	// Achievements service health
 	var achievementCount int64
-	if err := h.db.Model(&model.Achievement{}).Count(&achievementCount); err == nil {
+	result := h.db.Model(&model.Achievement{}).Count(&achievementCount)
+	if result.Error == nil {
 		services["achievements"] = true
 	} else {
 		services["achievements"] = false
