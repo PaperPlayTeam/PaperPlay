@@ -2,16 +2,15 @@ package api
 
 import (
 	"net/http"
+	"paperplay/internal/middleware"
+	"paperplay/internal/model"
+	"paperplay/internal/service"
+	"paperplay/internal/websocket"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"gorm.io/gorm"
-
-	"paperplay/internal/middleware"
-	"paperplay/internal/model"
-	"paperplay/internal/service"
-	"paperplay/internal/websocket"
 )
 
 // AchievementHandler handles achievement-related HTTP requests
@@ -41,25 +40,25 @@ func NewAchievementHandler(
 
 // AchievementResponse represents achievement data for API responses
 type AchievementResponse struct {
-	ID          string                 `json:"id"`
-	Name        string                 `json:"name"`
-	Description string                 `json:"description"`
-	IconURL     string                 `json:"icon_url"`
-	Level       int                    `json:"level"`
-	Category    string                 `json:"category"`
-	IsActive    bool                   `json:"is_active"`
-	Rules       map[string]interface{} `json:"rules"`
-	NFTMetadata map[string]interface{} `json:"nft_metadata,omitempty"`
+	ID          string         `json:"id"`
+	Name        string         `json:"name"`
+	Description string         `json:"description"`
+	IconURL     string         `json:"icon_url"`
+	Level       int            `json:"level"`
+	Category    string         `json:"category"`
+	IsActive    bool           `json:"is_active"`
+	Rules       map[string]any `json:"rules"`
+	NFTMetadata map[string]any `json:"nft_metadata,omitempty"`
 }
 
 // UserAchievementResponse represents user achievement data for API responses
 type UserAchievementResponse struct {
-	ID            string                 `json:"id"`
-	UserID        string                 `json:"user_id"`
-	AchievementID string                 `json:"achievement_id"`
-	EarnedAt      string                 `json:"earned_at"`
-	EventData     map[string]interface{} `json:"event_data,omitempty"`
-	Achievement   *AchievementSummary    `json:"achievement"`
+	ID            string              `json:"id"`
+	UserID        string              `json:"user_id"`
+	AchievementID string              `json:"achievement_id"`
+	EarnedAt      string              `json:"earned_at"`
+	EventData     map[string]any      `json:"event_data,omitempty"`
+	Achievement   *AchievementSummary `json:"achievement"`
 }
 
 // AchievementSummary represents a summary of achievement info
@@ -89,20 +88,20 @@ func (h *AchievementHandler) GetAllAchievements(c *gin.Context) {
 	for _, achievement := range achievements {
 		// Parse rule JSON
 		rule, _ := achievement.GetRule()
-		var rules map[string]interface{}
+		var rules map[string]any
 		if rule != nil {
-			rules = map[string]interface{}{
+			rules = map[string]any{
 				"type":       rule.Type,
 				"conditions": rule.Conditions,
 			}
 		}
 
 		// Parse NFT metadata JSON if available
-		var nftMetadata map[string]interface{}
+		var nftMetadata map[string]any
 		if achievement.NFTEnabled && achievement.NFTMetadata != "" {
 			metadata, _ := achievement.GetNFTMetadata()
 			if metadata != nil {
-				nftMetadata = map[string]interface{}{
+				nftMetadata = map[string]any{
 					"name":        metadata.Name,
 					"description": metadata.Description,
 					"image":       metadata.Image,

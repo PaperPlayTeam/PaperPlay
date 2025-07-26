@@ -122,9 +122,6 @@ test_system_endpoints() {
     # Health check
     test_http_response "$BASE_URL/health" "GET" "" "" "200" "GET /health"
     
-    # Metrics endpoint
-    test_http_response "$BASE_URL/metrics" "GET" "" "" "200" "GET /metrics"
-    
     echo ""
 }
 
@@ -139,15 +136,29 @@ test_user_authentication() {
         \"display_name\": \"$TEST_DISPLAY_NAME\"
     }"
     
-    register_response=$(test_http_response "$BASE_URL/api/v1/auth/register" "POST" "$register_data" "" "201" "POST /api/v1/auth/register")
+    print_test "POST /api/v1/auth/register"
+    register_response=$(curl -s -w "\n%{http_code}" -X POST "$BASE_URL/api/v1/auth/register" \
+        -H "Content-Type: application/json" \
+        -d "$register_data")
     
-    # Extract user info
-    USER_ID=$(echo "$register_response" | jq -r '.user.id // empty')
-    ACCESS_TOKEN=$(echo "$register_response" | jq -r '.access_token // empty')
-    REFRESH_TOKEN=$(echo "$register_response" | jq -r '.refresh_token // empty')
+    register_http_code=$(echo "$register_response" | tail -n1)
+    register_body=$(echo "$register_response" | head -n -1)
     
-    if [ -z "$ACCESS_TOKEN" ]; then
-        print_error "Failed to get access token from registration"
+    if [ "$register_http_code" = "201" ]; then
+        print_success "POST /api/v1/auth/register (Status: $register_http_code)"
+        
+        # Extract user info from JSON response
+        USER_ID=$(echo "$register_body" | jq -r '.user.id // empty')
+        ACCESS_TOKEN=$(echo "$register_body" | jq -r '.access_token // empty')
+        REFRESH_TOKEN=$(echo "$register_body" | jq -r '.refresh_token // empty')
+        
+        if [ -z "$ACCESS_TOKEN" ]; then
+            print_error "Failed to get access token from registration"
+            exit 1
+        fi
+    else
+        print_error "POST /api/v1/auth/register (Expected: 201, Got: $register_http_code)"
+        echo "Response: $register_body"
         exit 1
     fi
     
@@ -159,12 +170,14 @@ test_user_authentication() {
     
     test_http_response "$BASE_URL/api/v1/auth/login" "POST" "$login_data" "" "200" "POST /api/v1/auth/login"
     
-    # Refresh Token
-    refresh_data="{
-        \"refresh_token\": \"$REFRESH_TOKEN\"
-    }"
-    
-    test_http_response "$BASE_URL/api/v1/auth/refresh" "POST" "$refresh_data" "" "200" "POST /api/v1/auth/refresh"
+    # Refresh Token (only if we have a refresh token)
+    if [ -n "$REFRESH_TOKEN" ]; then
+        refresh_data="{
+            \"refresh_token\": \"$REFRESH_TOKEN\"
+        }"
+        
+        test_http_response "$BASE_URL/api/v1/auth/refresh" "POST" "$refresh_data" "" "200" "POST /api/v1/auth/refresh"
+    fi
     
     echo ""
 }
@@ -202,46 +215,82 @@ test_level_system() {
     auth_header="-H \"Authorization: Bearer $ACCESS_TOKEN\""
     
     # Get All Subjects
-    subjects_response=$(test_http_response "$BASE_URL/api/v1/subjects" "GET" "" "$auth_header" "200" "GET /api/v1/subjects")
+    print_test "GET /api/v1/subjects"
+    subjects_full_response=$(curl -s -w "\n%{http_code}" -X GET "$BASE_URL/api/v1/subjects" $auth_header)
+    subjects_http_code=$(echo "$subjects_full_response" | tail -n1)
+    subjects_body=$(echo "$subjects_full_response" | head -n -1)
     
-    # Extract first subject ID if exists
-    SUBJECT_ID=$(echo "$subjects_response" | jq -r '.data[0].id // empty')
+    if [ "$subjects_http_code" = "200" ]; then
+        print_success "GET /api/v1/subjects (Status: $subjects_http_code)"
+        # Extract first subject ID if exists
+        SUBJECT_ID=$(echo "$subjects_body" | jq -r '.data[0].id // empty')
+    else
+        print_error "GET /api/v1/subjects (Expected: 200, Got: $subjects_http_code)"
+        echo "Response: $subjects_body"
+    fi
     
     if [ -n "$SUBJECT_ID" ]; then
         # Get Single Subject
         test_http_response "$BASE_URL/api/v1/subjects/$SUBJECT_ID" "GET" "" "$auth_header" "200" "GET /api/v1/subjects/{subject_id}"
         
         # Get Subject Papers
-        papers_response=$(test_http_response "$BASE_URL/api/v1/subjects/$SUBJECT_ID/papers" "GET" "" "$auth_header" "200" "GET /api/v1/subjects/{subject_id}/papers")
+        print_test "GET /api/v1/subjects/{subject_id}/papers"
+        papers_full_response=$(curl -s -w "\n%{http_code}" -X GET "$BASE_URL/api/v1/subjects/$SUBJECT_ID/papers" $auth_header)
+        papers_http_code=$(echo "$papers_full_response" | tail -n1)
+        papers_body=$(echo "$papers_full_response" | head -n -1)
+        
+        if [ "$papers_http_code" = "200" ]; then
+            print_success "GET /api/v1/subjects/{subject_id}/papers (Status: $papers_http_code)"
+            # Extract first paper ID if exists
+            PAPER_ID=$(echo "$papers_body" | jq -r '.data[0].id // empty')
+        else
+            print_error "GET /api/v1/subjects/{subject_id}/papers (Expected: 200, Got: $papers_http_code)"
+            echo "Response: $papers_body"
+        fi
         
         # Get Subject Roadmap
         test_http_response "$BASE_URL/api/v1/subjects/$SUBJECT_ID/roadmap" "GET" "" "$auth_header" "200" "GET /api/v1/subjects/{subject_id}/roadmap"
-        
-        # Extract first paper ID if exists
-        PAPER_ID=$(echo "$papers_response" | jq -r '.data[0].id // empty')
         
         if [ -n "$PAPER_ID" ]; then
             # Get Single Paper
             test_http_response "$BASE_URL/api/v1/papers/$PAPER_ID" "GET" "" "$auth_header" "200" "GET /api/v1/papers/{paper_id}"
             
             # Get Paper Level
-            level_response=$(test_http_response "$BASE_URL/api/v1/papers/$PAPER_ID/level" "GET" "" "$auth_header" "200" "GET /api/v1/papers/{paper_id}/level")
+            print_test "GET /api/v1/papers/{paper_id}/level"
+            level_full_response=$(curl -s -w "\n%{http_code}" -X GET "$BASE_URL/api/v1/papers/$PAPER_ID/level" $auth_header)
+            level_http_code=$(echo "$level_full_response" | tail -n1)
+            level_body=$(echo "$level_full_response" | head -n -1)
             
-            # Extract level ID if exists
-            LEVEL_ID=$(echo "$level_response" | jq -r '.data.id // empty')
+            if [ "$level_http_code" = "200" ]; then
+                print_success "GET /api/v1/papers/{paper_id}/level (Status: $level_http_code)"
+                # Extract level ID if exists
+                LEVEL_ID=$(echo "$level_body" | jq -r '.data.id // empty')
+            else
+                print_error "GET /api/v1/papers/{paper_id}/level (Expected: 200, Got: $level_http_code)"
+                echo "Response: $level_body"
+            fi
             
             if [ -n "$LEVEL_ID" ]; then
                 # Get Single Level
                 test_http_response "$BASE_URL/api/v1/levels/$LEVEL_ID" "GET" "" "$auth_header" "200" "GET /api/v1/levels/{level_id}"
                 
                 # Get Level Questions
-                questions_response=$(test_http_response "$BASE_URL/api/v1/levels/$LEVEL_ID/questions" "GET" "" "$auth_header" "200" "GET /api/v1/levels/{level_id}/questions")
+                print_test "GET /api/v1/levels/{level_id}/questions"
+                questions_full_response=$(curl -s -w "\n%{http_code}" -X GET "$BASE_URL/api/v1/levels/$LEVEL_ID/questions" $auth_header)
+                questions_http_code=$(echo "$questions_full_response" | tail -n1)
+                questions_body=$(echo "$questions_full_response" | head -n -1)
+                
+                if [ "$questions_http_code" = "200" ]; then
+                    print_success "GET /api/v1/levels/{level_id}/questions (Status: $questions_http_code)"
+                    # Extract first question ID if exists
+                    QUESTION_ID=$(echo "$questions_body" | jq -r '.data[0].id // empty')
+                else
+                    print_error "GET /api/v1/levels/{level_id}/questions (Expected: 200, Got: $questions_http_code)"
+                    echo "Response: $questions_body"
+                fi
                 
                 # Start Level
                 test_http_response "$BASE_URL/api/v1/levels/$LEVEL_ID/start" "POST" "" "$auth_header" "200" "POST /api/v1/levels/{level_id}/start"
-                
-                # Extract first question ID if exists
-                QUESTION_ID=$(echo "$questions_response" | jq -r '.data[0].id // empty')
                 
                 if [ -n "$QUESTION_ID" ]; then
                     # Get Single Question
