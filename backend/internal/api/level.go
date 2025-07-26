@@ -345,6 +345,7 @@ func (h *LevelHandler) GetQuestion(c *gin.Context) {
 		"level_id":     question.LevelID,
 		"stem":         question.Stem,
 		"content_json": question.ContentJSON,
+		"answer_json":  question.AnswerJSON,
 		"score":        question.Score,
 		"created_by":   question.CreatedBy,
 		"created_at":   question.CreatedAt,

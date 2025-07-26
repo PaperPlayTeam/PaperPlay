@@ -286,7 +286,7 @@ func setupAPIRoutes(
 
 		questions := protected.Group("/questions")
 		{
-			questions.GET("", levelHandler.GetAllQuestions) // 新增：获取所有问题
+			questions.GET("", levelHandler.GetAllQuestions)
 			questions.GET("/:question_id", levelHandler.GetQuestion)
 		}
 
