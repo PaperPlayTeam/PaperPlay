@@ -4,6 +4,11 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"paperplay/config"
+	"paperplay/internal/middleware"
+	"paperplay/internal/model"
+	"paperplay/internal/service"
+	"paperplay/internal/websocket"
 	"sync"
 	"testing"
 
@@ -12,12 +17,6 @@ import (
 	"go.uber.org/zap"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
-
-	"paperplay/config"
-	"paperplay/internal/middleware"
-	"paperplay/internal/model"
-	"paperplay/internal/service"
-	"paperplay/internal/websocket"
 )
 
 var (
@@ -160,7 +159,7 @@ func TestAchievementHandler_GetAllAchievements(t *testing.T) {
 	assert.True(t, response.Success)
 
 	// Check if data contains achievement details
-	data, ok := response.Data.([]interface{})
+	data, ok := response.Data.([]any)
 	assert.True(t, ok)
 	// Since we're using real service, we might get all achievements
 	assert.GreaterOrEqual(t, len(data), 0)
@@ -230,7 +229,7 @@ func TestAchievementHandler_GetWebSocketStats(t *testing.T) {
 	assert.NoError(t, err)
 	assert.True(t, response.Success)
 
-	data := response.Data.(map[string]interface{})
+	data := response.Data.(map[string]any)
 	assert.Contains(t, data, "total_clients")
 	assert.Contains(t, data, "connected_users")
 }
@@ -277,13 +276,13 @@ func TestAchievementHandler_GetSystemStats(t *testing.T) {
 	assert.NoError(t, err)
 	assert.True(t, response.Success)
 
-	data := response.Data.(map[string]interface{})
+	data := response.Data.(map[string]any)
 	assert.Contains(t, data, "websocket")
 	assert.Contains(t, data, "database")
 	assert.Contains(t, data, "metrics")
 
 	// Check database health
-	dbData := data["database"].(map[string]interface{})
+	dbData := data["database"].(map[string]any)
 	assert.Equal(t, true, dbData["healthy"])
 }
 
@@ -304,7 +303,7 @@ func TestSystemHandler_GetHealth(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, w.Code)
 
-	var response map[string]interface{}
+	var response map[string]any
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	assert.NoError(t, err)
 	assert.Equal(t, "healthy", response["status"])
@@ -312,7 +311,7 @@ func TestSystemHandler_GetHealth(t *testing.T) {
 	assert.Contains(t, response, "timestamp")
 	assert.Contains(t, response, "services")
 
-	services := response["services"].(map[string]interface{})
+	services := response["services"].(map[string]any)
 	assert.Equal(t, true, services["database"])
 	assert.Equal(t, true, services["websocket"])
 	assert.Equal(t, false, services["ethereum"])

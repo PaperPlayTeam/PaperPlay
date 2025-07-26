@@ -5,14 +5,13 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"paperplay/internal/model"
 	"testing"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
-
-	"paperplay/internal/model"
 )
 
 func setupLevelTestDB() *gorm.DB {
@@ -112,6 +111,7 @@ func seedLevelTestData(db *gorm.DB) {
 	question := &model.Question{
 		ID:          "550e8400-e29b-41d4-a716-446655440004",
 		LevelID:     "550e8400-e29b-41d4-a716-446655440003",
+		Subtitle:    "About backpropagation",
 		Stem:        "What is backpropagation?",
 		ContentJSON: `{"type":"mcq","options":["Option A","Option B","Option C","Option D"]}`,
 		AnswerJSON:  `{"type":"single","correct_options":["Option A"],"explanation":"Backpropagation is..."}`,

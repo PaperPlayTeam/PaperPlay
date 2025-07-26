@@ -97,6 +97,7 @@ func (l *Level) SetMetaData(meta *MetaData) error {
 type Question struct {
 	ID          string    `json:"id" gorm:"primaryKey;type:text"`
 	LevelID     string    `json:"level_id" gorm:"not null;type:text;index"`
+	Subtitle    string    `json:"subtitle" gorm:"type:text"`
 	Stem        string    `json:"stem" gorm:"not null;type:text"`         // Question stem/context
 	ContentJSON string    `json:"content_json" gorm:"not null;type:text"` // Question content as JSON
 	AnswerJSON  string    `json:"answer_json" gorm:"not null;type:text"`  // Standard answer as JSON

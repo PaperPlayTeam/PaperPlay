@@ -5,17 +5,16 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"paperplay/config"
+	"paperplay/internal/middleware"
+	"paperplay/internal/model"
+	"paperplay/internal/service"
 	"testing"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
-
-	"paperplay/config"
-	"paperplay/internal/middleware"
-	"paperplay/internal/model"
-	"paperplay/internal/service"
 )
 
 func setupTestDB() *gorm.DB {
@@ -252,7 +251,7 @@ func TestUserHandler_GetProfile(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, w.Code)
 
-	var response map[string]interface{}
+	var response map[string]any
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	assert.NoError(t, err)
 	assert.Contains(t, response, "user")
