@@ -169,10 +169,13 @@
 .question-section {
 	padding: 20rpx;
 }
+
+/* 修改问题卡片样式 */
 .question-cards {
 	display: flex;
 	flex-direction: column;
-	gap: 20rpx;
+	gap: 30rpx;
+	padding: 20rpx;
 }
 .question-card {
 	background: #ffffff;
@@ -295,6 +298,25 @@
 	color: #666;
 }
 
+/* 添加论文信息样式 */
+.paper-info {
+	background: #f8f9fa;
+	padding: 16rpx;
+	border-radius: 12rpx;
+	margin-bottom: 20rpx;
+}
+.paper-title {
+	font-size: 28rpx;
+	color: #333;
+	font-weight: bold;
+	display: block;
+	margin-bottom: 8rpx;
+}
+.paper-author {
+	font-size: 24rpx;
+	color: #666;
+}
+
 /* 底部背景 */
 .bottom-bg {
     position: fixed;
@@ -348,5 +370,107 @@
 /* 确保内容区域不被底部栏遮挡 */
 .content-area {
     padding-bottom: 240rpx;
+}
+
+/* 骨骼屏动画样式 */
+.skeleton-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 30rpx;
+  padding: 20rpx;
+}
+.skeleton-card {
+  background: #f5f5f5;
+  border-radius: 20rpx;
+  padding: 30rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.05);
+  -webkit-animation: skeleton-loading 1.2s infinite linear alternate;
+          animation: skeleton-loading 1.2s infinite linear alternate;
+}
+@-webkit-keyframes skeleton-loading {
+0% { background-color: #f5f5f5;
+}
+100% { background-color: #e9ecef;
+}
+}
+@keyframes skeleton-loading {
+0% { background-color: #f5f5f5;
+}
+100% { background-color: #e9ecef;
+}
+}
+.skeleton-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+.skeleton-number {
+  width: 80rpx;
+  height: 32rpx;
+  border-radius: 8rpx;
+  background: #e0e0e0;
+}
+.skeleton-meta {
+  display: flex;
+  gap: 16rpx;
+}
+.skeleton-tag {
+  width: 60rpx;
+  height: 24rpx;
+  border-radius: 12rpx;
+  background: #e0e0e0;
+}
+.skeleton-paper-info {
+  margin-bottom: 20rpx;
+}
+.skeleton-paper-title {
+  width: 180rpx;
+  height: 28rpx;
+  border-radius: 8rpx;
+  background: #e0e0e0;
+  margin-bottom: 8rpx;
+}
+.skeleton-paper-author {
+  width: 120rpx;
+  height: 20rpx;
+  border-radius: 8rpx;
+  background: #e0e0e0;
+}
+.skeleton-title {
+  width: 90%;
+  height: 32rpx;
+  border-radius: 8rpx;
+  background: #e0e0e0;
+  margin-bottom: 12rpx;
+}
+.skeleton-title.short {
+  width: 60%;
+}
+.skeleton-score {
+  width: 80rpx;
+  height: 20rpx;
+  border-radius: 8rpx;
+  background: #e0e0e0;
+}
+.skeleton-preview {
+  margin-top: 20rpx;
+}
+.skeleton-preview-title {
+  width: 100rpx;
+  height: 20rpx;
+  border-radius: 8rpx;
+  background: #e0e0e0;
+  margin-bottom: 10rpx;
+}
+.skeleton-options {
+  display: flex;
+  gap: 20rpx;
+}
+.skeleton-option {
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: 20rpx;
+  background: #e0e0e0;
 }
 

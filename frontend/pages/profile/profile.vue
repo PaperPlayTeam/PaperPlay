@@ -40,24 +40,7 @@
 							<text class="stat-name">AI题目</text>
 						</view>
 					</view>
-					<view class="stat-item" id="stat-math">
-						<view class="stat-icon">
-							<svg id="math-icon" width="60" height="60"></svg>
-						</view>
-						<view class="stat-content">
-							<text class="stat-value">23</text>
-							<text class="stat-name">数学题目</text>
-						</view>
-					</view>
-					<view class="stat-item" id="stat-bio">
-						<view class="stat-icon">
-							<svg id="bio-icon" width="60" height="60"></svg>
-						</view>
-						<view class="stat-content">
-							<text class="stat-value">12</text>
-							<text class="stat-name">生物题目</text>
-						</view>
-					</view>
+
 				</view>
 			</view>
 			
@@ -68,9 +51,7 @@
 			<view class="about-section">
 				<text class="section-title">关于 paperPlay</text>
 				<view class="about-content">
-					<text class="about-text">版本：v1.0.0</text>
-					<text class="about-text">开发者：学术团队</text>
-					<text class="about-text">联系我们：support@paperplay.com</text>
+					<text class="about-text">版本：v0.0.1</text>
 				</view>
 			</view>
 

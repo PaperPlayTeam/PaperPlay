@@ -228,25 +228,6 @@ var _roughjs = _interopRequireDefault(__webpack_require__(/*! roughjs */ 50));
 //
 //
 //
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
 var _default = {
   data: function data() {
     return {

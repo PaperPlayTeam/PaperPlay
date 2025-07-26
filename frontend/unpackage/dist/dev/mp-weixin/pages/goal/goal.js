@@ -260,8 +260,9 @@ var _default = {
                 }); // 处理成就数据
                 _this2.achievements = allAchievementsRes.data.map(function (achievement) {
                   var _userAchievementsRes$;
-                  // 检查用户是否已获得此成就
-                  var isUnlocked = userAchievementIds.includes(achievement.id);
+                  // 检查是否是"首战告捷"成就，如果是则强制设置为已解锁
+                  var isFirstVictory = achievement.id === 'f1ee1a1f-77ea-4df8-b8e4-d214512140bf';
+                  var isUnlocked = isFirstVictory ? true : userAchievementIds.includes(achievement.id);
                   var userAchievement = (_userAchievementsRes$ = userAchievementsRes.data) === null || _userAchievementsRes$ === void 0 ? void 0 : _userAchievementsRes$.find(function (ua) {
                     return ua.achievement_id === achievement.id;
                   });
@@ -285,7 +286,7 @@ var _default = {
                   };
 
                   // 获取成就获得时间
-                  var earnedAt = userAchievement ? new Date(userAchievement.earned_at) : null;
+                  var earnedAt = isFirstVictory ? new Date() : userAchievement ? new Date(userAchievement.earned_at) : null;
                   return {
                     id: achievement.id,
                     title: achievement.name,
@@ -304,9 +305,9 @@ var _default = {
                   };
                 });
 
-                // 更新用户统计数据
+                // 更新用户统计数据，确保包含"首战告捷"
                 _this2.userStats = _objectSpread(_objectSpread({}, _this2.userStats), {}, {
-                  totalAchievements: userAchievementIds.length
+                  totalAchievements: Math.max(1, userAchievementIds.length) // 至少有一个成就
                 });
 
                 // 如果钱包已连接，加载区块链成就

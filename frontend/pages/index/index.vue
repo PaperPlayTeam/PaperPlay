@@ -11,59 +11,61 @@
 		<view class="content">
 			<!-- Logo区域 -->
 			<view class="logo-container">
-				<image class="logo" src="/static/logo.png" mode="aspectFit" ></image>
+				<image class="logo" src="/static/login/Group.svg" mode="aspectFit" ></image>
 			</view>
 			
-			<!-- 项目名称 -->
-			<view class="title-container">
-				<text class="title">paperPlay</text>
-				<text class="subtitle">探索学术的乐趣</text>
-			</view>
+
 
 			<!-- 登录/注册表单 -->
-			<view class="form-container">
-				<view class="form-header">
-					<text class="form-type" :class="{ active: isLogin }" @click="isLogin = true">登录</text>
-					<text class="form-type" :class="{ active: !isLogin }" @click="isLogin = false">注册</text>
-				</view>
-
-				<view class="form-content">
-					<!-- 邮箱 -->
-					<input 
-						class="input"
-						type="email"
-						v-model="formData.email"
-						placeholder="邮箱"
-					/>
-					
-					<!-- 密码 -->
-					<input 
-						class="input"
-						type="password"
-						v-model="formData.password"
-						placeholder="密码"
-					/>
-					
-					<!-- 注册时显示的额外字段 -->
-					<template v-if="!isLogin">
+			<view class="form-section">
+				<view class="form-container">
+			
+					<view class="form-content">
+						<input 
+							class="input"
+							type="email"
+							v-model="formData.email"
+							placeholder="邮箱"
+						/>
+						
+						<!-- 密码 -->
 						<input 
 							class="input"
 							type="password"
-							v-model="formData.confirmPassword"
-							placeholder="确认密码"
+							v-model="formData.password"
+							placeholder="密码"
 						/>
-						<input 
-							class="input"
-							type="text"
-							v-model="formData.display_name"
-							placeholder="显示名称"
-						/>
-					</template>
+						
+						<!-- 注册时显示的额外字段 -->
+						<template v-if="!isLogin">
+							<input 
+								class="input"
+								type="password"
+								v-model="formData.confirmPassword"
+								placeholder="确认密码"
+							/>
+							<input 
+								class="input"
+								type="text"
+								v-model="formData.display_name"
+								placeholder="显示名称"
+							/>
+						</template>
+					</view>
+					
+					<button class="submit-btn" @click="handleSubmit">
+						{{ isLogin ? '登录' : '注册' }}
+					</button>
 				</view>
-
-				<button class="submit-btn" @click="handleSubmit">
-					{{ isLogin ? '登录' : '注册' }}
-				</button>
+		
+			</view>
+			<view class="bottom-section">
+				<view class="bottom-images">
+					<image class="bottom-img" src="/static/login/Union.png" mode="aspectFit"></image>
+					<image class="bottom-img" src="/static/login/Union-1.png" mode="aspectFit"></image>
+					<image class="bottom-img" src="/static/login/Union-2.png" mode="aspectFit"></image>
+					<image class="bottom-img" src="/static/login/Union-3.png" mode="aspectFit"></image>
+				</view>
 			</view>
 		</view>
 	</view>
@@ -197,264 +199,150 @@ export default {
 <style>
 .container {
 	min-height: 100vh;
-	background: linear-gradient(135deg, #fbf0d8 0%, #fff5e5 100%);
+	width: 100vw;
+	background: #fff;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	justify-content: space-between;
-	padding: 80px 0 40px;
-	box-sizing: border-box;
+	justify-content: flex-start; /* 改为 flex-start，让内容从顶部开始 */
 	position: relative;
-	overflow: hidden;
-}
-
-.decoration {
-	position: absolute;
-	width: 100%;
-	height: 100%;
-	pointer-events: none;
-}
-
-.circle {
-	position: absolute;
-	border-radius: 50%;
-	opacity: 0.1;
-}
-
-.circle-1 {
-	width: 300px;
-	height: 300px;
-	background: #ff9966;
-	top: -100px;
-	right: -100px;
-}
-
-.circle-2 {
-	width: 200px;
-	height: 200px;
-	background: #ff7f50;
-	bottom: -50px;
-	left: -50px;
-}
-
-.dots {
-	position: absolute;
-	width: 100px;
-	height: 100px;
-	background-image: radial-gradient(#666 2px, transparent 2px);
-	background-size: 15px 15px;
-	opacity: 0.1;
-}
-
-.dots-1 {
-	top: 20%;
-	left: 10%;
-}
-
-.dots-2 {
-	bottom: 30%;
-	right: 10%;
-}
-
-.content {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	width: 100%;
-	z-index: 1;
+	padding: 0;
+	box-sizing: border-box;
 }
 
 .logo-container {
-	position: relative;
-	margin-bottom: 40px;
+	width: 100vw;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	margin-top: 60rpx; /* 从 100rpx 减少到 60rpx */
+	margin-bottom: 20rpx;
 }
 
 .logo {
-	width: 120px;
-	height: 120px;
-	border-radius: 30px;
-	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-	background: white;
-	/* padding: 15px; */
-	animation: float 3s ease-in-out infinite;
-}
-
-
-
-.title-container {
-	text-align: center;
-	animation: fadeIn 1s ease-out;
-}
-
-.title {
-	font-size: 36px;
-	font-weight: 600;
-	color: #333333;
-	margin-bottom: 12px;
+	width: 600rpx;  /* 超级大！从 260rpx 增加到 600rpx */
+	height: 600rpx; /* 超级大！从 260rpx 增加到 600rpx */
 	display: block;
-	text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.subtitle {
-	font-size: 18px;
-	color: #666666;
-	display: block;
-	margin-bottom: 30px;
-}
-
-.feature-list {
+.form-section {
+	width: 100vw;
 	display: flex;
 	justify-content: center;
-	gap: 20px;
-	margin-top: 30px;
-}
-
-.feature-item {
-	display: flex;
-	flex-direction: column;
 	align-items: center;
-	gap: 8px;
-	animation: slideUp 0.5s ease-out backwards;
+	flex: 1;
+	min-height: 400rpx;
+	margin-top: 40rpx; /* 添加顶部边距 */
 }
 
-.feature-item:nth-child(2) {
-	animation-delay: 0.2s;
-}
-
-.feature-item:nth-child(3) {
-	animation-delay: 0.4s;
-}
-
-.feature-icon {
-	font-size: 24px;
-}
-
-.feature-text {
-	font-size: 14px;
-	color: #666666;
-}
-
-.button-container {
-	width: 100%;
-	padding: 0 32px;
-	box-sizing: border-box;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	gap: 12px;
-}
-
-.start-btn {
-	background: linear-gradient(135deg, #ff9966 0%, #ff7f50 100%);
-	width: 100%;
-	height: 56px;
-	border-radius: 28px;
-	color: #ffffff;
-	font-size: 18px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	transition: all 0.3s ease;
-	padding: 0;
-	margin: 0;
-	line-height: 1;
-	box-shadow: 0 4px 15px rgba(255, 127, 80, 0.3);
-}
-
-.start-btn:active {
-	transform: scale(0.98);
-	box-shadow: 0 2px 8px rgba(255, 127, 80, 0.2);
-}
-
-.arrow {
-	margin-left: 8px;
-	font-size: 20px;
-	transition: transform 0.3s ease;
-}
-
-.start-btn:active .arrow {
-	transform: translateX(4px);
-}
-
-.hint-text {
-	font-size: 14px;
-	color: #999;
-	opacity: 0.8;
-}
-
-@keyframes float {
-	0%, 100% { transform: translateY(0); }
-	50% { transform: translateY(-10px); }
-}
-
-@keyframes shine {
-	0%, 100% { transform: translateX(-100%) rotate(45deg); }
-	50% { transform: translateX(100%) rotate(45deg); }
-}
-
-@keyframes fadeIn {
-	from { opacity: 0; transform: translateY(20px); }
-	to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes slideUp {
-	from { opacity: 0; transform: translateY(20px); }
-	to { opacity: 1; transform: translateY(0); }
-}
-
-/* 表单样式 */
 .form-container {
-	width: 80%;
+	width: 90vw;
 	max-width: 600rpx;
-	margin-top: 60rpx;
+	background: #fff;
+	border: 3px solid #b5d6f2;
+	border-radius: 32rpx;
+	padding: 60rpx 40rpx 40rpx 40rpx;
+	box-sizing: border-box;
+	box-shadow: 0 8rpx 32rpx rgba(181, 214, 242, 0.08);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
 }
 
 .form-header {
-	display: flex;
-	justify-content: center;
-	gap: 60rpx;
+	width: 100%;
+	text-align: center;
 	margin-bottom: 40rpx;
 }
 
-.form-type {
-	font-size: 32rpx;
-	color: #666;
-	padding: 10rpx 20rpx;
-	cursor: pointer;
-}
-
-.form-type.active {
-	color: #ff7f50;
-	border-bottom: 4rpx solid #ff7f50;
+.form-title {
+	font-size: 40rpx;
+	color: #3e2a1c;
+	font-weight: bold;
+	letter-spacing: 2rpx;
 }
 
 .form-content {
+	width: 100%;
 	display: flex;
 	flex-direction: column;
-	gap: 20rpx;
+	gap: 32rpx;
+	margin-bottom: 40rpx;
 }
 
 .input {
+	width: 100%;
+	box-sizing: border-box;
 	height: 80rpx;
-	background: rgba(255, 255, 255, 0.8);
-	border: 2rpx solid #ddd;
+	background: rgba(245, 245, 245, 0.8);
+	border: 2rpx solid #b5d6f2;
 	border-radius: 40rpx;
 	padding: 0 30rpx;
 	font-size: 28rpx;
+	color: #333;
 }
 
 .submit-btn {
-	margin-top: 40rpx;
+	width: 100%;
 	height: 88rpx;
-	background: linear-gradient(135deg, #ff9966 0%, #ff7f50 100%);
+	background: linear-gradient(135deg, #b5d6f2 0%, #7ec0ee 100%);
 	border-radius: 44rpx;
-	color: white;
+	color: #3e2a1c;
 	font-size: 32rpx;
 	border: none;
-	box-shadow: 0 4rpx 12rpx rgba(255, 127, 80, 0.3);
+	box-shadow: 0 4rpx 12rpx rgba(181, 214, 242, 0.15);
+	font-weight: bold;
+	letter-spacing: 2rpx;
 }
 
 .submit-btn:active {
 	transform: scale(0.98);
+}
+
+.bottom-section {
+	width: 100vw;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	margin-bottom: 60rpx;
+}
+
+.bottom-images {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 32rpx;
+	width: 100%;
+}
+
+.bottom-img {
+	width: 140rpx;
+	height: 140rpx;
+	object-fit: contain;
+}
+
+@media (max-width: 500px) {
+	.form-container {
+		padding: 40rpx 10rpx 30rpx 10rpx;
+	}
+	.logo-container {
+		margin-top: 30rpx; /* 移动端减少到 30rpx */
+		margin-bottom: 10rpx;
+	}
+	.logo {
+		width: 400rpx;
+		height: 400rpx;
+	}
+	.form-section {
+		margin-top: 20rpx; /* 移动端减少顶部边距 */
+	}
+	.bottom-section {
+		margin-bottom: 30rpx;
+	}
+	.bottom-img {
+		width: 100rpx;
+		height: 100rpx;
+	}
 }
 </style>

@@ -156,3 +156,85 @@ to {
   line-height: 1.6;
 }
 
+/* 在现有样式的最后添加 */
+.quiz-container {
+  position: relative;
+  z-index: 1;
+}
+canvas {
+  position: fixed !important;
+  z-index: 999 !important;
+  pointer-events: none;
+}
+
+/* 顶部返回按钮样式 */
+.quiz-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+.back-btn {
+  display: flex;
+  align-items: center;
+  font-size: 32rpx;
+  color: #666;
+  padding: 10rpx 20rpx;
+  border-radius: 12rpx;
+  background: #fff;
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.06);
+  width: -webkit-fit-content;
+  width: fit-content;
+  cursor: pointer;
+}
+.back-btn:active {
+  opacity: 0.7;
+}
+.back-icon {
+  font-size: 36rpx;
+  margin-right: 8rpx;
+}
+
+/* 骨骼屏动画样式 */
+.quiz-skeleton {
+  padding: 30rpx 0;
+}
+.skeleton-title {
+  width: 60%;
+  height: 48rpx;
+  background: #e0e0e0;
+  border-radius: 12rpx;
+  margin: 0 auto 32rpx auto;
+  -webkit-animation: skeleton-loading 1.2s infinite linear alternate;
+          animation: skeleton-loading 1.2s infinite linear alternate;
+}
+.skeleton-card {
+  width: 100%;
+  height: 180rpx;
+  background: #e0e0e0;
+  border-radius: 20rpx;
+  margin-bottom: 30rpx;
+  -webkit-animation: skeleton-loading 1.2s infinite linear alternate;
+          animation: skeleton-loading 1.2s infinite linear alternate;
+}
+.skeleton-btn {
+  width: 40%;
+  height: 60rpx;
+  background: #e0e0e0;
+  border-radius: 30rpx;
+  margin: 40rpx auto 0 auto;
+  -webkit-animation: skeleton-loading 1.2s infinite linear alternate;
+          animation: skeleton-loading 1.2s infinite linear alternate;
+}
+@-webkit-keyframes skeleton-loading {
+0% { background-color: #e0e0e0;
+}
+100% { background-color: #f5f5f5;
+}
+}
+@keyframes skeleton-loading {
+0% { background-color: #e0e0e0;
+}
+100% { background-color: #f5f5f5;
+}
+}
+

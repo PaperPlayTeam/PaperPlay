@@ -12,98 +12,89 @@
 		<scroll-view class="content-area" scroll-y>
 			<view class="daily-intro">
 				<text class="intro-title">每日精选</text>
-				<!-- 学科选择器 -->
-				<view class="subject-selector">
-					<view 
-						v-for="subject in subjects" 
-						:key="subject.id"
-						:class="['subject-item', { active: currentSubject && currentSubject.id === subject.id }]"
-						@click="selectSubject(subject)"
-					>
-						{{ subject.name }}
-					</view>
-				</view>
 			</view>
 
-			<!-- 论文列表 -->
+			<!-- 加载状态 -->
 			<view v-if="loading" class="loading-container">
-				<text>加载中...</text>
-			</view>
-			<view v-else-if="!currentPaper" class="paper-cards">
-				<view 
-					v-for="(paper, index) in papers" 
-					:key="paper.id"
-					class="paper-card"
-					@click="openPaper(paper)"
-				>
-					<view class="card-header">
-						<text class="paper-number">#{{ index + 1 }}</text>
-						<text class="paper-category" v-if="currentSubject">{{ currentSubject.name }}</text>
-					</view>
-					<view class="card-title">
-						<text>{{ paper.title }}</text>
-					</view>
-					<view class="card-meta">
-						<text class="author">{{ getCitation(paper.citation) }}</text>
-						<text class="year">{{ getYear(paper.created_at) }}</text>
-					</view>
-					<view class="card-description">
-						<text>{{ paper.description || '探索这篇论文的核心概念和关键发现。' }}</text>
-					</view>
-					<view v-if="paper.level" class="level-info">
-						<text class="level-name">关卡: {{ paper.level.name }}</text>
-						<text class="level-score">通过分数: {{ getPassScore(paper.level.pass_condition) }}</text>
+				<!-- 骨骼屏动画 -->
+				<view class="skeleton-cards">
+					<view 
+						v-for="i in 3" 
+						:key="i"
+						class="skeleton-card"
+					>
+						<view class="skeleton-header">
+							<view class="skeleton-number"></view>
+							<view class="skeleton-meta">
+								<view class="skeleton-tag"></view>
+								<view class="skeleton-tag"></view>
+							</view>
+						</view>
+						
+						<view class="skeleton-paper-info">
+							<view class="skeleton-paper-title"></view>
+							<view class="skeleton-paper-author"></view>
+						</view>
+						
+						<view class="skeleton-title"></view>
+						<view class="skeleton-title short"></view>
+						
+						<view class="skeleton-meta">
+							<view class="skeleton-score"></view>
+						</view>
+						
+						<view class="skeleton-preview">
+							<view class="skeleton-preview-title"></view>
+							<view class="skeleton-options">
+								<view class="skeleton-option"></view>
+								<view class="skeleton-option"></view>
+								<view class="skeleton-option"></view>
+								<view class="skeleton-option"></view>
+							</view>
+						</view>
 					</view>
 				</view>
 			</view>
 			
 			<!-- 问题列表 -->
-			<view v-else class="question-section">
-				<!-- 返回按钮 -->
-				<view class="back-button" @click="currentPaper = null">
-					<text class="back-icon">←</text>
-					<text>返回论文列表</text>
-				</view>
-				
-				<!-- 当前论文信息 -->
-				<view class="current-paper-info">
-					<text class="paper-title">{{ currentPaper.title }}</text>
-					<text class="paper-author">{{ getCitation(currentPaper.citation) }}</text>
-				</view>
-				
-				<!-- 问题卡片列表 -->
-				<view class="question-cards">
-					<view 
-						v-for="(question, index) in questions" 
-						:key="question.id"
-						class="question-card"
-						:data-difficulty="question.difficulty"
-						@click="startQuiz(question)"
-					>
-						<view class="card-header">
-							<text class="question-number">问题 {{ index + 1 }}</text>
-							<view class="question-meta">
-								<text class="question-type">{{ getQuestionType(question.content.type) }}</text>
-								<text class="question-difficulty">{{ getDifficulty(question.difficulty) }}</text>
-							</view>
+			<view v-else class="question-cards">
+				<view 
+					v-for="(question, index) in questions" 
+					:key="question.id"
+					class="question-card"
+					:data-difficulty="question.difficulty"
+					@click="startQuiz(question)"
+				>
+					<view class="card-header">
+						<text class="question-number">问题 {{ index + 1 }}</text>
+						<view class="question-meta">
+							
 						</view>
-						<view class="card-title">
-							<text>{{ question.stem }}</text>
-						</view>
-						<view class="card-meta">
-							<text class="score">分值: {{ question.score }}分</text>
-							<text class="author">出题人: {{ question.created_by }}</text>
-						</view>
-						<view v-if="question.content.type === 'mcq'" class="card-preview">
-							<text class="preview-title">选项预览:</text>
-							<view class="preview-options">
-								<text v-for="(option, optIndex) in question.content.options" 
-									:key="optIndex" 
-									class="preview-option"
-								>
-									{{ String.fromCharCode(65 + optIndex) }}
-								</text>
-							</view>
+					</view>
+					
+					<!-- 论文信息 -->
+					<view class="paper-info">
+						<text class="paper-title">{{ question.paper.title }}</text>
+						<text class="paper-author">{{ getCitation(question.paper.citation) }}</text>
+					</view>
+					
+					<view class="card-title">
+						<text>{{ question.stem }}</text>
+					</view>
+					
+					<view class="card-meta">
+						<text class="score">分值: {{ question.score }}分</text>
+					</view>
+					
+					<view v-if="question.content.type === 'mcq'" class="card-preview">
+						<text class="preview-title">选项预览:</text>
+						<view class="preview-options">
+							<text v-for="(option, optIndex) in question.content.options" 
+								:key="optIndex" 
+								class="preview-option"
+							>
+								{{ String.fromCharCode(65 + optIndex) }}
+							</text>
 						</view>
 					</view>
 				</view>
@@ -141,16 +132,15 @@ import { getLevelQuestions } from '@/api/levels';
 export default {
 	data() {
 		return {
-			subjects: [],
-			currentSubject: null,
 			papers: [],
 			loading: false,
-			currentPaper: null,
-			questions: []
+			questions: [],
+			aiSubjectId: 'ml_ai_subject'
 		}
 	},
 	async onLoad() {
-		await this.loadSubjects();
+		// 直接加载AI相关的论文，不需要加载所有学科
+		await this.loadAIPapers();
 	},
 	methods: {
 		// 处理API错误
@@ -187,15 +177,53 @@ export default {
 			}
 		},
 		
-		// 加载所有学科
-		async loadSubjects() {
+		// 修改加载方法，直接加载问题列表
+		async loadAIPapers() {
 			try {
 				this.loading = true;
-				const response = await getAllSubjects();
-				if (response.success && response.data.length > 0) {
-					this.subjects = response.data;
-					// 默认选择第一个学科
-					await this.selectSubject(this.subjects[0]);
+				
+				// 获取AI学科的论文
+				const response = await getSubjectPapers(this.aiSubjectId);
+				if (response.success) {
+					this.papers = response.data;
+					
+					// 从每篇论文中获取问题
+					const allQuestions = [];
+					for (const paper of this.papers) {
+						try {
+							// 获取论文的关卡信息
+							const levelResponse = await getPaperLevel(paper.id);
+							if (levelResponse.success && levelResponse.data) {
+								// 获取关卡问题
+								const questionsResponse = await getLevelQuestions(levelResponse.data.id);
+								if (questionsResponse.success) {
+									// 为每个问题添加论文信息和paper_id
+									const paperQuestions = questionsResponse.data.map(question => ({
+										...question,
+										content: JSON.parse(question.content_json || '{}'),
+										answer: JSON.parse(question.answer_json || '{}'),
+										level_id: levelResponse.data.id,
+										paper_id: paper.id, // 添加 paper_id
+										paper: {
+											id: paper.id,
+											title: paper.title,
+											citation: paper.citation,
+											level: levelResponse.data
+										}
+									}));
+									
+									// 随机选择1-2个问题
+									const randomQuestions = this.shuffleArray(paperQuestions).slice(0, Math.floor(Math.random() * 2) + 1);
+									allQuestions.push(...randomQuestions);
+								}
+							}
+						} catch (error) {
+							console.error(`获取论文${paper.id}的问题失败:`, error);
+						}
+					}
+					
+					// 随机打乱所有问题，并只取前10个
+					this.questions = this.shuffleArray(allQuestions).slice(0, 10);
 				}
 			} catch (error) {
 				this.handleApiError(error);
@@ -204,37 +232,21 @@ export default {
 			}
 		},
 		
-		// 选择学科
+		// 添加数组随机打乱方法
+		shuffleArray(array) {
+			for (let i = array.length - 1; i > 0; i--) {
+				const j = Math.floor(Math.random() * (i + 1));
+				[array[i], array[j]] = [array[j], array[i]];
+			}
+			return array;
+		},
+		
+		// 移除或简化selectSubject方法，因为我们只关注AI学科
 		async selectSubject(subject) {
-			try {
-				this.loading = true;
-				this.currentSubject = subject;
-				this.questions = []; // 清空问题列表
-				this.currentPaper = null;
-				
-				const response = await getSubjectPapers(subject.id);
-				if (response.success) {
-					// 获取每个论文的关卡信息
-					const papersWithLevels = await Promise.all(
-						response.data.map(async (paper) => {
-							try {
-								const levelResponse = await getPaperLevel(paper.id);
-								return {
-									...paper,
-									level: levelResponse.success ? levelResponse.data : null
-								};
-							} catch (error) {
-								console.error(`获取论文${paper.id}的关卡信息失败:`, error);
-								return paper;
-							}
-						})
-					);
-					this.papers = papersWithLevels;
-				}
-			} catch (error) {
-				this.handleApiError(error);
-			} finally {
-				this.loading = false;
+			// 如果需要保留切换功能，可以保留这个方法
+			// 但是只在选择的是AI学科时加载论文
+			if (subject.id === this.aiSubjectId) {
+				await this.loadAIPapers();
 			}
 		},
 		
@@ -314,9 +326,17 @@ export default {
 		
 		// 开始答题
 		startQuiz(question) {
-			if (this.currentPaper && this.currentPaper.level) {
+			// 从问题对象中获取 paper_id
+			const paperId = question.paper_id;
+			
+			if (paperId) {
 				uni.navigateTo({
-					url: `/pages/quiz/quiz?levelId=${this.currentPaper.level.id}&questionId=${question.id}`
+					url: `/pages/quiz/quiz?id=${paperId}`
+				});
+			} else {
+				uni.showToast({
+					title: '无法获取论文信息',
+					icon: 'none'
 				});
 			}
 		},
@@ -530,10 +550,12 @@ export default {
 	padding: 20rpx;
 }
 
+/* 修改问题卡片样式 */
 .question-cards {
 	display: flex;
 	flex-direction: column;
-	gap: 20rpx;
+	gap: 30rpx;
+	padding: 20rpx;
 }
 
 .question-card {
@@ -674,6 +696,27 @@ export default {
 	color: #666;
 }
 
+/* 添加论文信息样式 */
+.paper-info {
+	background: #f8f9fa;
+	padding: 16rpx;
+	border-radius: 12rpx;
+	margin-bottom: 20rpx;
+}
+
+.paper-title {
+	font-size: 28rpx;
+	color: #333;
+	font-weight: bold;
+	display: block;
+	margin-bottom: 8rpx;
+}
+
+.paper-author {
+	font-size: 24rpx;
+	color: #666;
+}
+
 /* 底部背景 */
 .bottom-bg {
     position: fixed;
@@ -732,5 +775,113 @@ export default {
 /* 确保内容区域不被底部栏遮挡 */
 .content-area {
     padding-bottom: 240rpx;
+}
+
+/* 骨骼屏动画样式 */
+.skeleton-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 30rpx;
+  padding: 20rpx;
+}
+
+.skeleton-card {
+  background: #f5f5f5;
+  border-radius: 20rpx;
+  padding: 30rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.05);
+  animation: skeleton-loading 1.2s infinite linear alternate;
+}
+
+@keyframes skeleton-loading {
+  0% { background-color: #f5f5f5; }
+  100% { background-color: #e9ecef; }
+}
+
+.skeleton-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.skeleton-number {
+  width: 80rpx;
+  height: 32rpx;
+  border-radius: 8rpx;
+  background: #e0e0e0;
+}
+
+.skeleton-meta {
+  display: flex;
+  gap: 16rpx;
+}
+
+.skeleton-tag {
+  width: 60rpx;
+  height: 24rpx;
+  border-radius: 12rpx;
+  background: #e0e0e0;
+}
+
+.skeleton-paper-info {
+  margin-bottom: 20rpx;
+}
+
+.skeleton-paper-title {
+  width: 180rpx;
+  height: 28rpx;
+  border-radius: 8rpx;
+  background: #e0e0e0;
+  margin-bottom: 8rpx;
+}
+
+.skeleton-paper-author {
+  width: 120rpx;
+  height: 20rpx;
+  border-radius: 8rpx;
+  background: #e0e0e0;
+}
+
+.skeleton-title {
+  width: 90%;
+  height: 32rpx;
+  border-radius: 8rpx;
+  background: #e0e0e0;
+  margin-bottom: 12rpx;
+}
+.skeleton-title.short {
+  width: 60%;
+}
+
+.skeleton-score {
+  width: 80rpx;
+  height: 20rpx;
+  border-radius: 8rpx;
+  background: #e0e0e0;
+}
+
+.skeleton-preview {
+  margin-top: 20rpx;
+}
+
+.skeleton-preview-title {
+  width: 100rpx;
+  height: 20rpx;
+  border-radius: 8rpx;
+  background: #e0e0e0;
+  margin-bottom: 10rpx;
+}
+
+.skeleton-options {
+  display: flex;
+  gap: 20rpx;
+}
+
+.skeleton-option {
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: 20rpx;
+  background: #e0e0e0;
 }
 </style>

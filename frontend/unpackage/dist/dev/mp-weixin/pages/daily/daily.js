@@ -102,67 +102,33 @@ var render = function () {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  var l0 =
-    !_vm.loading && !_vm.currentPaper
-      ? _vm.__map(_vm.papers, function (paper, index) {
-          var $orig = _vm.__get_orig(paper)
-          var m0 = _vm.getCitation(paper.citation)
-          var m1 = _vm.getYear(paper.created_at)
-          var m2 = paper.level
-            ? _vm.getPassScore(paper.level.pass_condition)
+  var l1 = !_vm.loading
+    ? _vm.__map(_vm.questions, function (question, index) {
+        var $orig = _vm.__get_orig(question)
+        var m0 = _vm.getCitation(question.paper.citation)
+        var l0 =
+          question.content.type === "mcq"
+            ? _vm.__map(question.content.options, function (option, optIndex) {
+                var $orig = _vm.__get_orig(option)
+                var g0 = String.fromCharCode(65 + optIndex)
+                return {
+                  $orig: $orig,
+                  g0: g0,
+                }
+              })
             : null
-          return {
-            $orig: $orig,
-            m0: m0,
-            m1: m1,
-            m2: m2,
-          }
-        })
-      : null
-  var m3 =
-    !_vm.loading && !!_vm.currentPaper
-      ? _vm.getCitation(_vm.currentPaper.citation)
-      : null
-  var l2 =
-    !_vm.loading && !!_vm.currentPaper
-      ? _vm.__map(_vm.questions, function (question, index) {
-          var $orig = _vm.__get_orig(question)
-          var m4 = _vm.getQuestionType(question.content.type)
-          var m5 = _vm.getDifficulty(question.difficulty)
-          var l1 =
-            question.content.type === "mcq"
-              ? _vm.__map(
-                  question.content.options,
-                  function (option, optIndex) {
-                    var $orig = _vm.__get_orig(option)
-                    var g0 = String.fromCharCode(65 + optIndex)
-                    return {
-                      $orig: $orig,
-                      g0: g0,
-                    }
-                  }
-                )
-              : null
-          return {
-            $orig: $orig,
-            m4: m4,
-            m5: m5,
-            l1: l1,
-          }
-        })
-      : null
-  if (!_vm._isMounted) {
-    _vm.e0 = function ($event) {
-      _vm.currentPaper = null
-    }
-  }
+        return {
+          $orig: $orig,
+          m0: m0,
+          l0: l0,
+        }
+      })
+    : null
   _vm.$mp.data = Object.assign(
     {},
     {
       $root: {
-        l0: l0,
-        m3: m3,
-        l2: l2,
+        l1: l1,
       },
     }
   )
@@ -207,6 +173,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 var _regenerator = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/regenerator */ 88));
+var _toConsumableArray2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/toConsumableArray */ 18));
 var _defineProperty2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/defineProperty */ 11));
 var _asyncToGenerator2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/asyncToGenerator */ 90));
 var _subjects = __webpack_require__(/*! @/api/subjects */ 94);
@@ -214,15 +181,16 @@ var _papers = __webpack_require__(/*! @/api/papers */ 104);
 var _levels = __webpack_require__(/*! @/api/levels */ 105);
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
 function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { (0, _defineProperty2.default)(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it.return != null) it.return(); } finally { if (didErr) throw err; } } }; }
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 var _default = {
   data: function data() {
     return {
-      subjects: [],
-      currentSubject: null,
       papers: [],
       loading: false,
-      currentPaper: null,
-      questions: []
+      questions: [],
+      aiSubjectId: 'ml_ai_subject'
     };
   },
   onLoad: function onLoad() {
@@ -233,7 +201,7 @@ var _default = {
           switch (_context.prev = _context.next) {
             case 0:
               _context.next = 2;
-              return _this.loadSubjects();
+              return _this.loadAIPapers();
             case 2:
             case "end":
               return _context.stop();
@@ -276,122 +244,160 @@ var _default = {
         });
       }
     },
-    // 加载所有学科
-    loadSubjects: function loadSubjects() {
+    // 修改加载方法，直接加载问题列表
+    loadAIPapers: function loadAIPapers() {
       var _this2 = this;
       return (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee2() {
-        var response;
-        return _regenerator.default.wrap(function _callee2$(_context2) {
+        var response, allQuestions, _iterator, _step, _loop;
+        return _regenerator.default.wrap(function _callee2$(_context3) {
           while (1) {
-            switch (_context2.prev = _context2.next) {
+            switch (_context3.prev = _context3.next) {
               case 0:
-                _context2.prev = 0;
+                _context3.prev = 0;
                 _this2.loading = true;
-                _context2.next = 4;
-                return (0, _subjects.getAllSubjects)();
+
+                // 获取AI学科的论文
+                _context3.next = 4;
+                return (0, _subjects.getSubjectPapers)(_this2.aiSubjectId);
               case 4:
-                response = _context2.sent;
-                if (!(response.success && response.data.length > 0)) {
-                  _context2.next = 9;
+                response = _context3.sent;
+                if (!response.success) {
+                  _context3.next = 25;
                   break;
                 }
-                _this2.subjects = response.data;
-                // 默认选择第一个学科
-                _context2.next = 9;
-                return _this2.selectSubject(_this2.subjects[0]);
-              case 9:
-                _context2.next = 14;
-                break;
-              case 11:
-                _context2.prev = 11;
-                _context2.t0 = _context2["catch"](0);
-                _this2.handleApiError(_context2.t0);
+                _this2.papers = response.data;
+
+                // 从每篇论文中获取问题
+                allQuestions = [];
+                _iterator = _createForOfIteratorHelper(_this2.papers);
+                _context3.prev = 9;
+                _loop = /*#__PURE__*/_regenerator.default.mark(function _loop() {
+                  var paper, levelResponse, questionsResponse, paperQuestions, randomQuestions;
+                  return _regenerator.default.wrap(function _loop$(_context2) {
+                    while (1) {
+                      switch (_context2.prev = _context2.next) {
+                        case 0:
+                          paper = _step.value;
+                          _context2.prev = 1;
+                          _context2.next = 4;
+                          return (0, _papers.getPaperLevel)(paper.id);
+                        case 4:
+                          levelResponse = _context2.sent;
+                          if (!(levelResponse.success && levelResponse.data)) {
+                            _context2.next = 10;
+                            break;
+                          }
+                          _context2.next = 8;
+                          return (0, _levels.getLevelQuestions)(levelResponse.data.id);
+                        case 8:
+                          questionsResponse = _context2.sent;
+                          if (questionsResponse.success) {
+                            // 为每个问题添加论文信息和paper_id
+                            paperQuestions = questionsResponse.data.map(function (question) {
+                              return _objectSpread(_objectSpread({}, question), {}, {
+                                content: JSON.parse(question.content_json || '{}'),
+                                answer: JSON.parse(question.answer_json || '{}'),
+                                level_id: levelResponse.data.id,
+                                paper_id: paper.id,
+                                // 添加 paper_id
+                                paper: {
+                                  id: paper.id,
+                                  title: paper.title,
+                                  citation: paper.citation,
+                                  level: levelResponse.data
+                                }
+                              });
+                            }); // 随机选择1-2个问题
+                            randomQuestions = _this2.shuffleArray(paperQuestions).slice(0, Math.floor(Math.random() * 2) + 1);
+                            allQuestions.push.apply(allQuestions, (0, _toConsumableArray2.default)(randomQuestions));
+                          }
+                        case 10:
+                          _context2.next = 15;
+                          break;
+                        case 12:
+                          _context2.prev = 12;
+                          _context2.t0 = _context2["catch"](1);
+                          console.error("\u83B7\u53D6\u8BBA\u6587".concat(paper.id, "\u7684\u95EE\u9898\u5931\u8D25:"), _context2.t0);
+                        case 15:
+                        case "end":
+                          return _context2.stop();
+                      }
+                    }
+                  }, _loop, null, [[1, 12]]);
+                });
+                _iterator.s();
+              case 12:
+                if ((_step = _iterator.n()).done) {
+                  _context3.next = 16;
+                  break;
+                }
+                return _context3.delegateYield(_loop(), "t0", 14);
               case 14:
-                _context2.prev = 14;
+                _context3.next = 12;
+                break;
+              case 16:
+                _context3.next = 21;
+                break;
+              case 18:
+                _context3.prev = 18;
+                _context3.t1 = _context3["catch"](9);
+                _iterator.e(_context3.t1);
+              case 21:
+                _context3.prev = 21;
+                _iterator.f();
+                return _context3.finish(21);
+              case 24:
+                // 随机打乱所有问题，并只取前10个
+                _this2.questions = _this2.shuffleArray(allQuestions).slice(0, 10);
+              case 25:
+                _context3.next = 30;
+                break;
+              case 27:
+                _context3.prev = 27;
+                _context3.t2 = _context3["catch"](0);
+                _this2.handleApiError(_context3.t2);
+              case 30:
+                _context3.prev = 30;
                 _this2.loading = false;
-                return _context2.finish(14);
-              case 17:
+                return _context3.finish(30);
+              case 33:
               case "end":
-                return _context2.stop();
+                return _context3.stop();
             }
           }
-        }, _callee2, null, [[0, 11, 14, 17]]);
+        }, _callee2, null, [[0, 27, 30, 33], [9, 18, 21, 24]]);
       }))();
     },
-    // 选择学科
+    // 添加数组随机打乱方法
+    shuffleArray: function shuffleArray(array) {
+      for (var i = array.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var _ref = [array[j], array[i]];
+        array[i] = _ref[0];
+        array[j] = _ref[1];
+      }
+      return array;
+    },
+    // 移除或简化selectSubject方法，因为我们只关注AI学科
     selectSubject: function selectSubject(subject) {
       var _this3 = this;
-      return (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee4() {
-        var response, papersWithLevels;
-        return _regenerator.default.wrap(function _callee4$(_context4) {
+      return (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee3() {
+        return _regenerator.default.wrap(function _callee3$(_context4) {
           while (1) {
             switch (_context4.prev = _context4.next) {
               case 0:
-                _context4.prev = 0;
-                _this3.loading = true;
-                _this3.currentSubject = subject;
-                _this3.questions = []; // 清空问题列表
-                _this3.currentPaper = null;
-                _context4.next = 7;
-                return (0, _subjects.getSubjectPapers)(subject.id);
-              case 7:
-                response = _context4.sent;
-                if (!response.success) {
-                  _context4.next = 13;
+                if (!(subject.id === _this3.aiSubjectId)) {
+                  _context4.next = 3;
                   break;
                 }
-                _context4.next = 11;
-                return Promise.all(response.data.map( /*#__PURE__*/function () {
-                  var _ref = (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee3(paper) {
-                    var levelResponse;
-                    return _regenerator.default.wrap(function _callee3$(_context3) {
-                      while (1) {
-                        switch (_context3.prev = _context3.next) {
-                          case 0:
-                            _context3.prev = 0;
-                            _context3.next = 3;
-                            return (0, _papers.getPaperLevel)(paper.id);
-                          case 3:
-                            levelResponse = _context3.sent;
-                            return _context3.abrupt("return", _objectSpread(_objectSpread({}, paper), {}, {
-                              level: levelResponse.success ? levelResponse.data : null
-                            }));
-                          case 7:
-                            _context3.prev = 7;
-                            _context3.t0 = _context3["catch"](0);
-                            console.error("\u83B7\u53D6\u8BBA\u6587".concat(paper.id, "\u7684\u5173\u5361\u4FE1\u606F\u5931\u8D25:"), _context3.t0);
-                            return _context3.abrupt("return", paper);
-                          case 11:
-                          case "end":
-                            return _context3.stop();
-                        }
-                      }
-                    }, _callee3, null, [[0, 7]]);
-                  }));
-                  return function (_x) {
-                    return _ref.apply(this, arguments);
-                  };
-                }()));
-              case 11:
-                papersWithLevels = _context4.sent;
-                _this3.papers = papersWithLevels;
-              case 13:
-                _context4.next = 18;
-                break;
-              case 15:
-                _context4.prev = 15;
-                _context4.t0 = _context4["catch"](0);
-                _this3.handleApiError(_context4.t0);
-              case 18:
-                _context4.prev = 18;
-                _this3.loading = false;
-                return _context4.finish(18);
-              case 21:
+                _context4.next = 3;
+                return _this3.loadAIPapers();
+              case 3:
               case "end":
                 return _context4.stop();
             }
           }
-        }, _callee4, null, [[0, 15, 18, 21]]);
+        }, _callee3);
       }))();
     },
     // 获取引用作者
@@ -417,9 +423,9 @@ var _default = {
     // 打开论文详情
     openPaper: function openPaper(paper) {
       var _this4 = this;
-      return (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee5() {
+      return (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee4() {
         var response;
-        return _regenerator.default.wrap(function _callee5$(_context5) {
+        return _regenerator.default.wrap(function _callee4$(_context5) {
           while (1) {
             switch (_context5.prev = _context5.next) {
               case 0:
@@ -465,7 +471,7 @@ var _default = {
                 return _context5.stop();
             }
           }
-        }, _callee5, null, [[0, 12, 15, 18]]);
+        }, _callee4, null, [[0, 12, 15, 18]]);
       }))();
     },
     // 获取问题类型显示文本
@@ -489,9 +495,16 @@ var _default = {
     },
     // 开始答题
     startQuiz: function startQuiz(question) {
-      if (this.currentPaper && this.currentPaper.level) {
+      // 从问题对象中获取 paper_id
+      var paperId = question.paper_id;
+      if (paperId) {
         uni.navigateTo({
-          url: "/pages/quiz/quiz?levelId=".concat(this.currentPaper.level.id, "&questionId=").concat(question.id)
+          url: "/pages/quiz/quiz?id=".concat(paperId)
+        });
+      } else {
+        uni.showToast({
+          title: '无法获取论文信息',
+          icon: 'none'
         });
       }
     },

@@ -1,6 +1,21 @@
 <template>
 	<view class="quiz-container">
-		<view v-if="loading">加载中...</view>
+		<!-- 顶部返回按钮 -->
+		<view class="quiz-header">
+			<view class="back-btn" @click="goBack">
+				<text class="back-icon">←</text>
+				<text>返回</text>
+			</view>
+		</view>
+
+		<!-- 骨骼屏动画 -->
+		<view v-if="loading" class="quiz-skeleton">
+			<view class="skeleton-title"></view>
+			<view class="skeleton-card"></view>
+			<view class="skeleton-card"></view>
+			<view class="skeleton-btn"></view>
+		</view>
+
 		<view v-else>
 			<!-- 当前题对的标题 -->
 			<view class="concept-title">
@@ -82,8 +97,9 @@
 
 <script>
 import { getPaperLevel } from '@/api/papers'
-import { getLevelQuestions } from '@/api/levels'
+import { getLevelQuestions, startLevel, submitAnswer, completeLevel } from '@/api/levels'
 import { getQuestion } from '@/api/questions'
+import confetti from 'canvas-confetti'  // 添加这行
 
 export default {
   data() {
@@ -98,7 +114,11 @@ export default {
       conceptSelectedOption: null,
       leadInShowResult: false,
       conceptShowResult: false,
-      loading: false
+      loading: false,
+      // 添加计时相关数据
+      startTime: null,
+      leadInStartTime: null,
+      conceptStartTime: null
     }
   },
 
@@ -167,11 +187,15 @@ export default {
   onLoad(options) {
     if (options.id) {
       this.paperId = options.id
+      this.startTime = Date.now()
       this.loadLevel()
     }
   },
 
   methods: {
+    goBack() {
+      uni.navigateBack();
+    },
     async loadLevel() {
       this.loading = true
       try {
@@ -179,6 +203,17 @@ export default {
         
         if (levelResponse.success) {
           this.level = levelResponse.data
+          this.levelId = this.level.id // 保存 levelId
+          
+          // 开始关卡
+          try {
+            await startLevel(this.levelId)
+            console.log('关卡开始成功')
+          } catch (error) {
+            console.error('开始关卡失败:', error)
+            // 不阻止用户继续，只记录错误
+          }
+          
           await this.loadQuestionIds(this.level.id)
         }
       } catch (error) {
@@ -244,42 +279,134 @@ export default {
       this.conceptSelectedOption = null
       this.leadInShowResult = false
       this.conceptShowResult = false
+      // 重置计时器
+      this.leadInStartTime = Date.now()
     },
 
-    selectLeadInOption(index) {
+    // 添加这两个新方法
+    fireBasicConfetti() {
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 }
+      });
+    },
+
+    fireSchoolPride() {
+      function fire(particleRatio, opts) {
+        confetti({
+          ...opts,
+          origin: { y: 0.7 },
+          particleCount: Math.floor(200 * particleRatio)
+        });
+      }
+
+      fire(0.25, {
+        spread: 26,
+        startVelocity: 55,
+        origin: { x: 0.2 }
+      });
+
+      fire(0.25, {
+        spread: 26,
+        startVelocity: 55,
+        origin: { x: 0.8 }
+      });
+
+      setTimeout(() => {
+        fire(0.2, {
+          spread: 60,
+          origin: { x: 0.2 }
+        });
+        fire(0.2, {
+          spread: 60,
+          origin: { x: 0.8 }
+        });
+      }, 150);
+    },
+
+    // 修改 selectLeadInOption 方法
+    async selectLeadInOption(index) {
       if (this.leadInShowResult) return
+      
       this.leadInSelectedOption = index
       this.leadInShowResult = true
       
       const isCorrect = this.isLeadInOptionCorrect(index)
+      const durationMs = Date.now() - (this.leadInStartTime || this.startTime)
+      
+      // 提交答案 - 修改 answer_json 格式
+      try {
+        const answerJson = {
+          type: "multiple_choice",
+          selected_option: this.getOptionLetter(index),
+          correct_option: this.leadInAnswerContent.correct_option,
+          is_correct: isCorrect
+        }
+        
+        await submitAnswer(
+          this.levelId,
+          this.leadInQuestion.id,
+          answerJson,
+          durationMs
+        )
+      } catch (error) {
+        console.error('提交答案失败:', error)
+        // 不阻止用户继续，只记录错误
+      }
       
       if (isCorrect) {
         this.showConceptQuestion = true
-        uni.showToast({ title: '回答正确！', icon: 'success' })
+        this.conceptStartTime = Date.now()
       } else {
         uni.showToast({ title: '答案错误', icon: 'none' })
       }
     },
 
-    selectConceptOption(index) {
+    // 修改 selectConceptOption 方法
+    async selectConceptOption(index) {
       if (this.conceptShowResult) return
+      
       this.conceptSelectedOption = index
       this.conceptShowResult = true
       
       const isCorrect = this.isConceptOptionCorrect(index)
+      const durationMs = Date.now() - (this.conceptStartTime || this.startTime)
+      
+      // 提交答案 - 修改 answer_json 格式
+      try {
+        const answerJson = {
+          type: "multiple_choice",
+          selected_option: this.getOptionLetter(index),
+          correct_option: this.conceptAnswerContent.correct_option,
+          is_correct: isCorrect
+        }
+        
+        await submitAnswer(
+          this.levelId,
+          this.conceptQuestion.id,
+          answerJson,
+          durationMs
+        )
+      } catch (error) {
+        console.error('提交答案失败:', error)
+        // 不阻止用户继续，只记录错误
+      }
       
       if (isCorrect) {
-        uni.showToast({ title: '回答正确！', icon: 'success' })
+        this.fireBasicConfetti()
       } else {
         uni.showToast({ title: '答案错误', icon: 'none' })
       }
     },
 
-    handleNext() {
+    // 修改 handleNext 方法
+    async handleNext() {
       if (!this.showConceptQuestion) {
         // 引入题部分
         if (this.isLeadInAnswerCorrect) {
           this.showConceptQuestion = true
+          this.conceptStartTime = Date.now()
         } else {
           this.leadInSelectedOption = null
           this.leadInShowResult = false
@@ -290,6 +417,16 @@ export default {
           this.currentPairIndex++
           this.loadCurrentPair()
         } else {
+          // 完成所有题目，提交关卡完成
+          try {
+            await completeLevel(this.levelId)
+            console.log('关卡完成提交成功')
+          } catch (error) {
+            console.error('提交关卡完成失败:', error)
+            // 不阻止用户继续，只记录错误
+          }
+          
+          this.fireSchoolPride()
           uni.showToast({
             title: '恭喜完成所有题目！',
             icon: 'success',
@@ -505,5 +642,76 @@ export default {
   border-radius: 12rpx;
   margin-bottom: 20rpx;
   line-height: 1.6;
+}
+
+/* 在现有样式的最后添加 */
+.quiz-container {
+  position: relative;
+  z-index: 1;
+}
+
+canvas {
+  position: fixed !important;
+  z-index: 999 !important;
+  pointer-events: none;
+}
+
+/* 顶部返回按钮样式 */
+.quiz-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+.back-btn {
+  display: flex;
+  align-items: center;
+  font-size: 32rpx;
+  color: #666;
+  padding: 10rpx 20rpx;
+  border-radius: 12rpx;
+  background: #fff;
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.06);
+  width: fit-content;
+  cursor: pointer;
+}
+.back-btn:active {
+  opacity: 0.7;
+}
+.back-icon {
+  font-size: 36rpx;
+  margin-right: 8rpx;
+}
+
+/* 骨骼屏动画样式 */
+.quiz-skeleton {
+  padding: 30rpx 0;
+}
+.skeleton-title {
+  width: 60%;
+  height: 48rpx;
+  background: #e0e0e0;
+  border-radius: 12rpx;
+  margin: 0 auto 32rpx auto;
+  animation: skeleton-loading 1.2s infinite linear alternate;
+}
+.skeleton-card {
+  width: 100%;
+  height: 180rpx;
+  background: #e0e0e0;
+  border-radius: 20rpx;
+  margin-bottom: 30rpx;
+  animation: skeleton-loading 1.2s infinite linear alternate;
+}
+.skeleton-btn {
+  width: 40%;
+  height: 60rpx;
+  background: #e0e0e0;
+  border-radius: 30rpx;
+  margin: 40rpx auto 0 auto;
+  animation: skeleton-loading 1.2s infinite linear alternate;
+}
+@keyframes skeleton-loading {
+  0% { background-color: #e0e0e0; }
+  100% { background-color: #f5f5f5; }
 }
 </style>

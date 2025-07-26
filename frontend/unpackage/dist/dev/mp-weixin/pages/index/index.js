@@ -102,14 +102,6 @@ var render = function () {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  if (!_vm._isMounted) {
-    _vm.e0 = function ($event) {
-      _vm.isLogin = true
-    }
-    _vm.e1 = function ($event) {
-      _vm.isLogin = false
-    }
-  }
 }
 var recyclableRender = false
 var staticRenderFns = []
@@ -153,6 +145,8 @@ exports.default = void 0;
 var _regenerator = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/regenerator */ 88));
 var _asyncToGenerator2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/asyncToGenerator */ 90));
 var _auth = __webpack_require__(/*! @/api/auth */ 91);
+//
+//
 //
 //
 //

@@ -282,27 +282,38 @@ var _default = {
       this.mascotLeft = -80;
     },
     handleTouchStart: function handleTouchStart(event) {
+      console.log('Touch start:', event.touches[0].clientX);
+      this.isDragging = true;
       this.touchStartX = event.touches[0].clientX;
       this.touchStartY = event.touches[0].clientY;
-      this.isDragging = true;
     },
     handleTouchMove: function handleTouchMove(event) {
+      console.log('Touch move:', event.touches[0].clientX, this.isDragging);
       if (!this.isDragging) return;
       var deltaX = event.touches[0].clientX - this.touchStartX;
       var deltaY = Math.abs(event.touches[0].clientY - this.touchStartY);
 
       // 如果是横向拖动
-      if (deltaX > deltaY) {
-        // 如果tab栏已经显示，不允许拖动
-        if (this.isTabShow) return;
-
-        // 限制最大拖动距离
-        var newLeft = Math.min(Math.max(-80, -80 + deltaX), 180);
+      if (Math.abs(deltaX) > deltaY) {
+        // 限制拖动范围
+        var newLeft;
+        if (this.isTabShow) {
+          // 如果tab栏已显示，允许向左拖动回去
+          newLeft = Math.min(Math.max(-80, 180 + deltaX), 180);
+        } else {
+          // 如果tab栏未显示，允许向右拖动
+          newLeft = Math.min(Math.max(-80, -80 + deltaX), 180);
+        }
         this.mascotLeft = newLeft;
 
         // 当向右拖动超过阈值时显示tab栏
-        if (deltaX > 30) {
+        if (deltaX > 30 && !this.isTabShow) {
           this.isTabShow = true;
+        }
+
+        // 当向左拖动超过阈值时隐藏tab栏
+        if (deltaX < -30 && this.isTabShow) {
+          this.isTabShow = false;
         }
         event.preventDefault(); // 阻止页面滚动
       }

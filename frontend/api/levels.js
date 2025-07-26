@@ -65,11 +65,15 @@ export function startLevel(levelId) {
  *   }
  * }>}
  */
-export function submitAnswer(levelId, data) {
+export function submitAnswer(levelId, questionId, answerJson, durationMs) {
     return request({
         url: `/api/v1/levels/${levelId}/submit`,
         method: 'POST',
-        data
+        data: {
+            question_id: questionId,
+            answer_json: answerJson,
+            duration_ms: durationMs
+        }
     });
 }
 

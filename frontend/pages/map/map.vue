@@ -2,8 +2,8 @@
 	<view class="container">
 		<view class="header" style="z-index: 10000;">
 			<view class="title-container">
-				<text class="title">{{ fieldName }} <br></text>
-				<text class="fieldDescription">{{fieldDescription}}</text>
+				<text class="title">Agent岛 <br></text>
+				<text class="fieldDescription">在游戏中探索智能体的奥秘</text>
 			</view>
 		</view>
 		<view id="map" class="map-container"></view>
@@ -124,35 +124,47 @@ export default {
 			this.mascotLeft = -80;
 		},
 		handleTouchStart(event) {
+			console.log('Touch start:', event.touches[0].clientX);
+			this.isDragging = true;
 			this.touchStartX = event.touches[0].clientX;
 			this.touchStartY = event.touches[0].clientY;
-			this.isDragging = true;
 		},
 		handleTouchMove(event) {
+			console.log('Touch move:', event.touches[0].clientX, this.isDragging);
 			if (!this.isDragging) return;
 			
 			const deltaX = event.touches[0].clientX - this.touchStartX;
 			const deltaY = Math.abs(event.touches[0].clientY - this.touchStartY);
 			
 			// 如果是横向拖动
-			if (deltaX > deltaY) {
-				// 如果tab栏已经显示，不允许拖动
-				if (this.isTabShow) return;
+			if (Math.abs(deltaX) > deltaY) {
+				// 限制拖动范围
+				let newLeft;
 				
-				// 限制最大拖动距离
-				const newLeft = Math.min(Math.max(-80, -80 + deltaX), 180);
+				if (this.isTabShow) {
+					// 如果tab栏已显示，允许向左拖动回去
+					newLeft = Math.min(Math.max(-80, 180 + deltaX), 180);
+				} else {
+					// 如果tab栏未显示，允许向右拖动
+					newLeft = Math.min(Math.max(-80, -80 + deltaX), 180);
+				}
+				
 				this.mascotLeft = newLeft;
 				
 				// 当向右拖动超过阈值时显示tab栏
-				if (deltaX > 30) {
+				if (deltaX > 30 && !this.isTabShow) {
 					this.isTabShow = true;
+				}
+				
+				// 当向左拖动超过阈值时隐藏tab栏
+				if (deltaX < -30 && this.isTabShow) {
+					this.isTabShow = false;
 				}
 				
 				event.preventDefault(); // 阻止页面滚动
 			}
 		},
 		handleTouchEnd() {
-
 			this.isDragging = false;
 			
 			// 根据tab栏状态决定最终位置

@@ -16,93 +16,16 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 var _regenerator = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/regenerator */ 88));
+var _defineProperty2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/defineProperty */ 11));
 var _slicedToArray2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/slicedToArray */ 5));
 var _asyncToGenerator2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/asyncToGenerator */ 90));
 var _papers = __webpack_require__(/*! @/api/papers */ 104);
 var _levels = __webpack_require__(/*! @/api/levels */ 105);
 var _questions = __webpack_require__(/*! @/api/questions */ 255);
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
+var _canvasConfetti = _interopRequireDefault(__webpack_require__(/*! canvas-confetti */ 256));
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { (0, _defineProperty2.default)(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+// 添加这行
 var _default = {
   data: function data() {
     return {
@@ -119,7 +42,11 @@ var _default = {
       conceptSelectedOption: null,
       leadInShowResult: false,
       conceptShowResult: false,
-      loading: false
+      loading: false,
+      // 添加计时相关数据
+      startTime: null,
+      leadInStartTime: null,
+      conceptStartTime: null
     };
   },
   computed: {
@@ -179,10 +106,14 @@ var _default = {
   onLoad: function onLoad(options) {
     if (options.id) {
       this.paperId = options.id;
+      this.startTime = Date.now();
       this.loadLevel();
     }
   },
   methods: {
+    goBack: function goBack() {
+      uni.navigateBack();
+    },
     loadLevel: function loadLevel() {
       var _this = this;
       return (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee() {
@@ -198,30 +129,46 @@ var _default = {
               case 4:
                 levelResponse = _context.sent;
                 if (!levelResponse.success) {
-                  _context.next = 9;
+                  _context.next = 19;
                   break;
                 }
                 _this.level = levelResponse.data;
-                _context.next = 9;
-                return _this.loadQuestionIds(_this.level.id);
-              case 9:
-                _context.next = 15;
-                break;
+                _this.levelId = _this.level.id; // 保存 levelId
+
+                // 开始关卡
+                _context.prev = 8;
+                _context.next = 11;
+                return (0, _levels.startLevel)(_this.levelId);
               case 11:
-                _context.prev = 11;
-                _context.t0 = _context["catch"](1);
-                console.error('获取关卡失败:', _context.t0);
-                _this.handleApiError(_context.t0);
-              case 15:
-                _context.prev = 15;
+                console.log('关卡开始成功');
+                _context.next = 17;
+                break;
+              case 14:
+                _context.prev = 14;
+                _context.t0 = _context["catch"](8);
+                console.error('开始关卡失败:', _context.t0);
+                // 不阻止用户继续，只记录错误
+              case 17:
+                _context.next = 19;
+                return _this.loadQuestionIds(_this.level.id);
+              case 19:
+                _context.next = 25;
+                break;
+              case 21:
+                _context.prev = 21;
+                _context.t1 = _context["catch"](1);
+                console.error('获取关卡失败:', _context.t1);
+                _this.handleApiError(_context.t1);
+              case 25:
+                _context.prev = 25;
                 _this.loading = false;
-                return _context.finish(15);
-              case 18:
+                return _context.finish(25);
+              case 28:
               case "end":
                 return _context.stop();
             }
           }
-        }, _callee, null, [[1, 11, 15, 18]]);
+        }, _callee, null, [[1, 21, 25, 28], [8, 14]]);
       }))();
     },
     loadQuestionIds: function loadQuestionIds(levelId) {
@@ -318,69 +265,231 @@ var _default = {
       this.conceptSelectedOption = null;
       this.leadInShowResult = false;
       this.conceptShowResult = false;
+      // 重置计时器
+      this.leadInStartTime = Date.now();
     },
+    // 添加这两个新方法
+    fireBasicConfetti: function fireBasicConfetti() {
+      (0, _canvasConfetti.default)({
+        particleCount: 100,
+        spread: 70,
+        origin: {
+          y: 0.6
+        }
+      });
+    },
+    fireSchoolPride: function fireSchoolPride() {
+      function fire(particleRatio, opts) {
+        (0, _canvasConfetti.default)(_objectSpread(_objectSpread({}, opts), {}, {
+          origin: {
+            y: 0.7
+          },
+          particleCount: Math.floor(200 * particleRatio)
+        }));
+      }
+      fire(0.25, {
+        spread: 26,
+        startVelocity: 55,
+        origin: {
+          x: 0.2
+        }
+      });
+      fire(0.25, {
+        spread: 26,
+        startVelocity: 55,
+        origin: {
+          x: 0.8
+        }
+      });
+      setTimeout(function () {
+        fire(0.2, {
+          spread: 60,
+          origin: {
+            x: 0.2
+          }
+        });
+        fire(0.2, {
+          spread: 60,
+          origin: {
+            x: 0.8
+          }
+        });
+      }, 150);
+    },
+    // 修改 selectLeadInOption 方法
     selectLeadInOption: function selectLeadInOption(index) {
-      if (this.leadInShowResult) return;
-      this.leadInSelectedOption = index;
-      this.leadInShowResult = true;
-      var isCorrect = this.isLeadInOptionCorrect(index);
-      if (isCorrect) {
-        this.showConceptQuestion = true;
-        uni.showToast({
-          title: '回答正确！',
-          icon: 'success'
-        });
-      } else {
-        uni.showToast({
-          title: '答案错误',
-          icon: 'none'
-        });
-      }
-    },
-    selectConceptOption: function selectConceptOption(index) {
-      if (this.conceptShowResult) return;
-      this.conceptSelectedOption = index;
-      this.conceptShowResult = true;
-      var isCorrect = this.isConceptOptionCorrect(index);
-      if (isCorrect) {
-        uni.showToast({
-          title: '回答正确！',
-          icon: 'success'
-        });
-      } else {
-        uni.showToast({
-          title: '答案错误',
-          icon: 'none'
-        });
-      }
-    },
-    handleNext: function handleNext() {
-      if (!this.showConceptQuestion) {
-        // 引入题部分
-        if (this.isLeadInAnswerCorrect) {
-          this.showConceptQuestion = true;
-        } else {
-          this.leadInSelectedOption = null;
-          this.leadInShowResult = false;
-        }
-      } else if (this.conceptShowResult) {
-        // 概念题完成后
-        if (this.currentPairIndex < this.questionPairs.length - 1) {
-          this.currentPairIndex++;
-          this.loadCurrentPair();
-        } else {
-          uni.showToast({
-            title: '恭喜完成所有题目！',
-            icon: 'success',
-            duration: 2000,
-            complete: function complete() {
-              setTimeout(function () {
-                return uni.navigateBack();
-              }, 2000);
+      var _this4 = this;
+      return (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee4() {
+        var isCorrect, durationMs, answerJson;
+        return _regenerator.default.wrap(function _callee4$(_context4) {
+          while (1) {
+            switch (_context4.prev = _context4.next) {
+              case 0:
+                if (!_this4.leadInShowResult) {
+                  _context4.next = 2;
+                  break;
+                }
+                return _context4.abrupt("return");
+              case 2:
+                _this4.leadInSelectedOption = index;
+                _this4.leadInShowResult = true;
+                isCorrect = _this4.isLeadInOptionCorrect(index);
+                durationMs = Date.now() - (_this4.leadInStartTime || _this4.startTime); // 提交答案 - 修改 answer_json 格式
+                _context4.prev = 6;
+                answerJson = {
+                  type: "multiple_choice",
+                  selected_option: _this4.getOptionLetter(index),
+                  correct_option: _this4.leadInAnswerContent.correct_option,
+                  is_correct: isCorrect
+                };
+                _context4.next = 10;
+                return (0, _levels.submitAnswer)(_this4.levelId, _this4.leadInQuestion.id, answerJson, durationMs);
+              case 10:
+                _context4.next = 15;
+                break;
+              case 12:
+                _context4.prev = 12;
+                _context4.t0 = _context4["catch"](6);
+                console.error('提交答案失败:', _context4.t0);
+                // 不阻止用户继续，只记录错误
+              case 15:
+                if (isCorrect) {
+                  _this4.showConceptQuestion = true;
+                  _this4.conceptStartTime = Date.now();
+                } else {
+                  uni.showToast({
+                    title: '答案错误',
+                    icon: 'none'
+                  });
+                }
+              case 16:
+              case "end":
+                return _context4.stop();
             }
-          });
-        }
-      }
+          }
+        }, _callee4, null, [[6, 12]]);
+      }))();
+    },
+    // 修改 selectConceptOption 方法
+    selectConceptOption: function selectConceptOption(index) {
+      var _this5 = this;
+      return (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee5() {
+        var isCorrect, durationMs, answerJson;
+        return _regenerator.default.wrap(function _callee5$(_context5) {
+          while (1) {
+            switch (_context5.prev = _context5.next) {
+              case 0:
+                if (!_this5.conceptShowResult) {
+                  _context5.next = 2;
+                  break;
+                }
+                return _context5.abrupt("return");
+              case 2:
+                _this5.conceptSelectedOption = index;
+                _this5.conceptShowResult = true;
+                isCorrect = _this5.isConceptOptionCorrect(index);
+                durationMs = Date.now() - (_this5.conceptStartTime || _this5.startTime); // 提交答案 - 修改 answer_json 格式
+                _context5.prev = 6;
+                answerJson = {
+                  type: "multiple_choice",
+                  selected_option: _this5.getOptionLetter(index),
+                  correct_option: _this5.conceptAnswerContent.correct_option,
+                  is_correct: isCorrect
+                };
+                _context5.next = 10;
+                return (0, _levels.submitAnswer)(_this5.levelId, _this5.conceptQuestion.id, answerJson, durationMs);
+              case 10:
+                _context5.next = 15;
+                break;
+              case 12:
+                _context5.prev = 12;
+                _context5.t0 = _context5["catch"](6);
+                console.error('提交答案失败:', _context5.t0);
+                // 不阻止用户继续，只记录错误
+              case 15:
+                if (isCorrect) {
+                  _this5.fireBasicConfetti();
+                } else {
+                  uni.showToast({
+                    title: '答案错误',
+                    icon: 'none'
+                  });
+                }
+              case 16:
+              case "end":
+                return _context5.stop();
+            }
+          }
+        }, _callee5, null, [[6, 12]]);
+      }))();
+    },
+    // 修改 handleNext 方法
+    handleNext: function handleNext() {
+      var _this6 = this;
+      return (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee6() {
+        return _regenerator.default.wrap(function _callee6$(_context6) {
+          while (1) {
+            switch (_context6.prev = _context6.next) {
+              case 0:
+                if (_this6.showConceptQuestion) {
+                  _context6.next = 4;
+                  break;
+                }
+                // 引入题部分
+                if (_this6.isLeadInAnswerCorrect) {
+                  _this6.showConceptQuestion = true;
+                  _this6.conceptStartTime = Date.now();
+                } else {
+                  _this6.leadInSelectedOption = null;
+                  _this6.leadInShowResult = false;
+                }
+                _context6.next = 21;
+                break;
+              case 4:
+                if (!_this6.conceptShowResult) {
+                  _context6.next = 21;
+                  break;
+                }
+                if (!(_this6.currentPairIndex < _this6.questionPairs.length - 1)) {
+                  _context6.next = 10;
+                  break;
+                }
+                _this6.currentPairIndex++;
+                _this6.loadCurrentPair();
+                _context6.next = 21;
+                break;
+              case 10:
+                _context6.prev = 10;
+                _context6.next = 13;
+                return (0, _levels.completeLevel)(_this6.levelId);
+              case 13:
+                console.log('关卡完成提交成功');
+                _context6.next = 19;
+                break;
+              case 16:
+                _context6.prev = 16;
+                _context6.t0 = _context6["catch"](10);
+                console.error('提交关卡完成失败:', _context6.t0);
+                // 不阻止用户继续，只记录错误
+              case 19:
+                _this6.fireSchoolPride();
+                uni.showToast({
+                  title: '恭喜完成所有题目！',
+                  icon: 'success',
+                  duration: 2000,
+                  complete: function complete() {
+                    setTimeout(function () {
+                      return uni.navigateBack();
+                    }, 2000);
+                  }
+                });
+              case 21:
+              case "end":
+                return _context6.stop();
+            }
+          }
+        }, _callee6, null, [[10, 16]]);
+      }))();
     },
     getOptionLetter: function getOptionLetter(index) {
       return String.fromCharCode(65 + index);
