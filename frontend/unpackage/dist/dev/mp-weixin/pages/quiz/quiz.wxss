@@ -1,0 +1,158 @@
+
+.quiz-container {
+	padding: 30rpx;
+	background-color: #f5f5f5;
+	min-height: 100vh;
+}
+.question-card {
+	background: #ffffff;
+	border-radius: 20rpx;
+	padding: 40rpx;
+	margin-bottom: 30rpx;
+	box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+}
+.question-text {
+	font-size: 32rpx;
+	color: #333;
+	line-height: 1.6;
+	margin-bottom: 30rpx;
+	font-weight: 500;
+}
+.options-container {
+	display: flex;
+	flex-direction: column;
+	gap: 20rpx;
+}
+.option {
+	padding: 24rpx;
+	border-radius: 12rpx;
+	background: #f8f9fa;
+	font-size: 28rpx;
+	color: #495057;
+	transition: all 0.3s ease;
+}
+.option.selected {
+	background: #e7f5ff;
+	color: #228be6;
+}
+.option.correct {
+	background: #d3f9d8;
+	color: #2b8a3e;
+}
+.option.wrong {
+	background: #ffe3e3;
+	color: #e03131;
+}
+.explanation-card {
+	background: #fff3bf;
+	border-radius: 20rpx;
+	padding: 30rpx;
+	margin-bottom: 30rpx;
+}
+.explanation-card.final {
+	background: #d3f9d8;
+}
+.explanation-text {
+	font-size: 28rpx;
+	color: #495057;
+	line-height: 1.6;
+}
+.concept-section {
+	margin-top: 40rpx;
+	-webkit-animation: fadeIn 0.5s ease;
+	        animation: fadeIn 0.5s ease;
+}
+@-webkit-keyframes fadeIn {
+from {
+		opacity: 0;
+		-webkit-transform: translateY(20rpx);
+		        transform: translateY(20rpx);
+}
+to {
+		opacity: 1;
+		-webkit-transform: translateY(0);
+		        transform: translateY(0);
+}
+}
+@keyframes fadeIn {
+from {
+		opacity: 0;
+		-webkit-transform: translateY(20rpx);
+		        transform: translateY(20rpx);
+}
+to {
+		opacity: 1;
+		-webkit-transform: translateY(0);
+		        transform: translateY(0);
+}
+}
+
+/* 添加新的样式 */
+.concept-name {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #2c3e50;
+  margin-bottom: 20rpx;
+  padding-bottom: 20rpx;
+  border-bottom: 2rpx solid #eee;
+}
+.explanation-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #2c3e50;
+  margin-bottom: 16rpx;
+}
+.feedback-card {
+  background: #fff3bf;
+  border-radius: 20rpx;
+  padding: 30rpx;
+  margin-bottom: 30rpx;
+}
+.feedback-card.correct {
+  background: #d3f9d8;
+}
+.feedback-text {
+  font-size: 28rpx;
+  color: #495057;
+  line-height: 1.6;
+}
+
+/* 添加新样式 */
+.question-type {
+  font-size: 32rpx;
+  color: #666;
+  text-align: center;
+  margin-bottom: 20rpx;
+  padding: 10rpx;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 10rpx;
+}
+
+/* 添加新样式 */
+.question-section {
+  margin-bottom: 30rpx;
+}
+.concept-title {
+  font-size: 40rpx;
+  font-weight: bold;
+  color: #2c3e50;
+  text-align: center;
+  margin-bottom: 30rpx;
+  padding: 20rpx;
+  background: white;
+  border-radius: 16rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+}
+.question-card.completed {
+  opacity: 0.8;
+}
+.concept-explanation {
+  font-size: 28rpx;
+  color: #666;
+  background: #f8f9fa;
+  padding: 20rpx;
+  border-radius: 12rpx;
+  margin-bottom: 20rpx;
+  line-height: 1.6;
+}
+

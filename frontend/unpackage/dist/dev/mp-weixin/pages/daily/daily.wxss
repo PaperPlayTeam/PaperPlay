@@ -1,0 +1,352 @@
+
+@font-face {
+    font-family: 'PingFang';
+    src: url(/static/fonts/平方手书体.ttf) format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+.container {
+	width: 100vw;
+	height: 100vh;
+	background-color: #b5d6f2;
+	position: relative;
+	overflow: hidden;
+}
+
+/* 顶部凸弧背景 */
+.header-container {
+	width: 100%;
+	height: 120rpx;
+	background-color: #b5d6f2;
+	position: relative;
+}
+.bottom-arch {
+	width: 100%;
+	height: 100%;
+	display: block;
+	position: absolute;
+	top: 0;
+	left: 0;
+}
+.app-title {
+	font-family: 'PingFang', cursive;
+	font-size: 72rpx;
+	color: #ffffff;
+	font-weight: bold;
+	text-shadow: 2rpx 2rpx 4rpx rgba(0, 0, 0, 0.2);
+}
+
+/* 内容区域 */
+.content-area {
+	position: absolute;
+	top: 120rpx;
+	left: 0;
+	right: 0;
+	bottom: 160rpx;
+	padding: 40rpx;
+	box-sizing: border-box;
+}
+.daily-intro {
+	text-align: center;
+	margin-bottom: 60rpx;
+}
+.intro-title {
+	display: block;
+	font-family: 'PingFang';
+	font-size: 56rpx;
+	color: #3e2a1c;
+	font-weight: bold;
+	margin-bottom: 20rpx;
+}
+.intro-subtitle {
+	display: block;
+	font-size: 32rpx;
+	color: #666666;
+}
+.subject-selector {
+	display: flex;
+	justify-content: center;
+	gap: 30rpx;
+	margin-top: 20rpx;
+}
+.subject-item {
+	padding: 10rpx 20rpx;
+	border-radius: 30rpx;
+	background-color: #f0f0f0;
+	color: #333;
+	font-size: 28rpx;
+	font-weight: bold;
+	cursor: pointer;
+	transition: background-color 0.3s ease;
+}
+.subject-item.active {
+	background-color: #ff7f50;
+	color: #fff;
+}
+.subject-item:active {
+	opacity: 0.8;
+}
+
+/* 论文列表 */
+.paper-cards {
+	display: flex;
+	flex-direction: column;
+	gap: 30rpx;
+	padding: 20rpx;
+}
+.paper-card {
+	background: #ffffff;
+	border-radius: 20rpx;
+	padding: 30rpx;
+	box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+	transition: -webkit-transform 0.3s ease;
+	transition: transform 0.3s ease;
+	transition: transform 0.3s ease, -webkit-transform 0.3s ease;
+}
+.paper-card:active {
+	-webkit-transform: scale(0.98);
+	        transform: scale(0.98);
+}
+.card-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 20rpx;
+}
+.paper-number {
+	font-size: 32rpx;
+	font-weight: bold;
+	color: #ff7f50;
+}
+.paper-category {
+	font-size: 24rpx;
+	color: #666;
+}
+.card-title {
+	font-size: 32rpx;
+	color: #333;
+	line-height: 1.5;
+	margin-bottom: 20rpx;
+	font-weight: 500;
+}
+.card-meta {
+	display: flex;
+	justify-content: space-between;
+	font-size: 24rpx;
+	color: #666;
+	margin-bottom: 20rpx;
+}
+.card-description {
+	font-size: 24rpx;
+	color: #666;
+	line-height: 1.4;
+	margin-bottom: 20rpx;
+}
+.level-info {
+	margin-top: 20rpx;
+	padding-top: 20rpx;
+	border-top: 2rpx solid #f0f0f0;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+.level-name {
+	font-size: 28rpx;
+	color: #3e2a1c;
+	font-weight: bold;
+}
+.level-score {
+	font-size: 24rpx;
+	color: #666;
+}
+.author, .year {
+	font-size: 24rpx;
+	color: #978B6B;
+}
+
+/* 问题列表样式 */
+.question-section {
+	padding: 20rpx;
+}
+.question-cards {
+	display: flex;
+	flex-direction: column;
+	gap: 20rpx;
+}
+.question-card {
+	background: #ffffff;
+	border-radius: 20rpx;
+	padding: 30rpx;
+	box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+	transition: -webkit-transform 0.3s ease;
+	transition: transform 0.3s ease;
+	transition: transform 0.3s ease, -webkit-transform 0.3s ease;
+}
+.question-card:active {
+	-webkit-transform: scale(0.98);
+	        transform: scale(0.98);
+}
+.card-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 20rpx;
+}
+.question-number {
+	font-size: 32rpx;
+	font-weight: bold;
+	color: #ff7f50;
+}
+.question-meta {
+	display: flex;
+	gap: 16rpx;
+}
+.question-type,
+.question-difficulty {
+	font-size: 24rpx;
+	padding: 4rpx 16rpx;
+	border-radius: 16rpx;
+	background: #f5f5f5;
+	color: #666;
+}
+.card-title {
+	font-size: 32rpx;
+	color: #333;
+	line-height: 1.5;
+	margin-bottom: 20rpx;
+	font-weight: 500;
+}
+.card-meta {
+	display: flex;
+	justify-content: space-between;
+	font-size: 24rpx;
+	color: #666;
+	margin-bottom: 20rpx;
+}
+.card-preview {
+	margin-top: 20rpx;
+	padding-top: 20rpx;
+	border-top: 2rpx solid #f0f0f0;
+}
+.preview-title {
+	font-size: 24rpx;
+	color: #999;
+	margin-bottom: 10rpx;
+}
+.preview-options {
+	display: flex;
+	gap: 20rpx;
+}
+.preview-option {
+	width: 40rpx;
+	height: 40rpx;
+	background: #f8f8f8;
+	border-radius: 20rpx;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 24rpx;
+	color: #666;
+}
+
+/* 根据难度设置不同的边框颜色 */
+.question-card[data-difficulty="1"] {
+	border-left: 8rpx solid #4CAF50;
+}
+.question-card[data-difficulty="2"] {
+	border-left: 8rpx solid #2196F3;
+}
+.question-card[data-difficulty="3"] {
+	border-left: 8rpx solid #FF9800;
+}
+.question-card[data-difficulty="4"] {
+	border-left: 8rpx solid #F44336;
+}
+.question-card[data-difficulty="5"] {
+	border-left: 8rpx solid #9C27B0;
+}
+.back-button {
+	display: flex;
+	align-items: center;
+	padding: 20rpx;
+	color: #666;
+	font-size: 28rpx;
+}
+.back-icon {
+	margin-right: 10rpx;
+	font-size: 32rpx;
+}
+.current-paper-info {
+	padding: 30rpx;
+	background: #fff;
+	margin-bottom: 20rpx;
+	border-radius: 20rpx;
+}
+.paper-title {
+	font-size: 32rpx;
+	font-weight: bold;
+	color: #333;
+	margin-bottom: 10rpx;
+	display: block;
+}
+.paper-author {
+	font-size: 24rpx;
+	color: #666;
+}
+
+/* 底部背景 */
+.bottom-bg {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 240rpx;
+    z-index: 9995;
+}
+.bottom-bg image {
+    width: 100%;
+    height: 100%;
+}
+
+/* 底部docker栏 */
+.bottom-docker {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 160rpx;
+    display: flex;
+    z-index: 9996;
+}
+.trapezoid {
+    flex: 1;
+    height: 160rpx;
+    position: relative;
+    margin-left: -40rpx;
+}
+.trapezoid:first-child {
+    margin-left: 0;
+}
+.trapezoid.active .docker-icon {
+    opacity: 1;
+}
+.trapezoid:not(.active) .docker-icon {
+    opacity: 0.6;
+}
+.docker-icon {
+    position: absolute;
+    width: 84rpx;
+    height: 84rpx;
+    left: 50%;
+    bottom: 30rpx;
+    -webkit-transform: translateX(-50%);
+            transform: translateX(-50%);
+    z-index: 2;
+}
+
+/* 确保内容区域不被底部栏遮挡 */
+.content-area {
+    padding-bottom: 240rpx;
+}
+

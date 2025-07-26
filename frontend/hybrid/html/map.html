@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Research Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/roughjs@4.3.1/bundled/rough.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+        #map {
+            width: 100%;
+            height: 100%;
+            background: #ADD7F5;
+        }
+        @font-face {
+            font-family: 'PingFang';
+            src: url('/static/fonts/平方手书体.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        .node-container {
+            position: relative;
+            width: 800px;
+            height: 800px;
+            overflow: visible;
+        }
+        .node-container svg {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            left: 0;
+            top: 0;
+            overflow: visible;
+        }
+        text {
+            white-space: nowrap !important;
+            overflow: visible !important;
+            font-family: 'PingFang', sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <script>
+        // 等待页面加载完成后初始化地图
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化地图
+            const map = L.map('map', {
+                crs: L.CRS.Simple,
+                minZoom: -1,
+                maxZoom: 2,
+                zoomControl: false,
+                attributionControl: false
+            });
+
+            // 设置边界
+            const bounds = [[0, 0], [1000, 1000]];
+            map.setMaxBounds(bounds);
+            map.setView([700, 300], 0);
+
+            // 添加缩放控制
+            L.control.zoom({
+                position: 'bottomright'
+            }).addTo(map);
+
+            // 添加背景
+            L.imageOverlay('/static/math.svg', bounds).addTo(map);
+
+            // 创建节点
+            function createNode(data) {
+                const mainSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                mainSvg.setAttribute('width', '800');
+                mainSvg.setAttribute('height', '800');
+                mainSvg.setAttribute('viewBox', '0 0 800 800');
+                
+                const rc = rough.svg(mainSvg);
+
+                // 如果未解锁，添加迷雾效果
+                if (!data.unlocked) {
+                    const fogPoints = generateFogPoints(400, 400, 60);
+                    const fogPath = rc.path(getFogPath(fogPoints), {
+                        stroke: 'rgba(128, 128, 128, 0.4)',
+                        strokeWidth: 1,
+                        fill: 'rgba(128, 128, 128, 0.3)',
+                        fillStyle: 'solid',
+                        roughness: 2,
+                        bowing: 2
+                    });
+                    mainSvg.appendChild(fogPath);
+
+                    // 添加点击区域
+                    const clickArea = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                    clickArea.setAttribute('cx', '400');
+                    clickArea.setAttribute('cy', '400');
+                    clickArea.setAttribute('r', '60');
+                    clickArea.setAttribute('fill', 'transparent');
+                    clickArea.setAttribute('style', 'cursor: pointer;');
+                    clickArea.onclick = () => {
+                        // 发送消息到Vue组件
+                        window.parent.postMessage({
+                            type: 'nodeClick',
+                            nodeId: data.id
+                        }, '*');
+                    };
+                    mainSvg.appendChild(clickArea);
+                }
+
+                // 创建外圆（透明）
+                const outerCircle = rc.circle(400, 400, 15, {
+                    stroke: '#000',
+                    strokeWidth: 2,
+                    roughness: 1.5,
+                    fill: 'none',
+                    bowing: 1
+                });
+                mainSvg.appendChild(outerCircle);
+
+                // 创建内部小圆点
+                const innerCircle = rc.circle(400, 400, 3, {
+                    stroke: '#000',
+                    strokeWidth: 1,
+                    roughness: 1,
+                    fill: '#000',
+                    fillStyle: 'solid',
+                    bowing: 1
+                });
+                mainSvg.appendChild(innerCircle);
+
+                // 添加文字
+                const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                text.setAttribute('x', 400);
+                text.setAttribute('y', 425);
+                text.setAttribute('text-anchor', 'middle');
+                text.setAttribute('dominant-baseline', 'hanging');
+                text.setAttribute('font-family', 'PingFang');
+                text.setAttribute('font-size', '16px');
+                text.setAttribute('fill', '#3e2a1c');
+                text.setAttribute('style', 'white-space: nowrap;');
+                text.textContent = data.title;
+                mainSvg.appendChild(text);
+
+                const icon = L.divIcon({
+                    className: '',
+                    html: `<div class="node-container">${mainSvg.outerHTML}</div>`,
+                    iconSize: [800, 800],
+                    iconAnchor: [400, 400]
+                });
+
+                const y = 1000 - Math.max(0, Math.min(data.y, 1000));
+                const x = Math.max(0, Math.min(data.x, 1000));
+                
+                const marker = L.marker([y, x], {
+                    icon: icon,
+                    title: data.title
+                });
+                
+                marker.addTo(map);
+            }
+
+            function generateFogPoints(centerX, centerY, radius) {
+                const points = [];
+                const numPoints = 12;
+                for (let i = 0; i < numPoints; i++) {
+                    const angle = (i / numPoints) * 2 * Math.PI;
+                    const randomRadius = radius + (Math.random() * 20 - 10);
+                    const x = centerX + Math.cos(angle) * randomRadius;
+                    const y = centerY + Math.sin(angle) * randomRadius;
+                    points.push([x, y]);
+                }
+                return points;
+            }
+
+            function getFogPath(points) {
+                let path = `M ${points[0][0]} ${points[0][1]}`;
+                for (let i = 1; i < points.length; i++) {
+                    const xc = (points[i][0] + points[i-1][0]) / 2;
+                    const yc = (points[i][1] + points[i-1][1]) / 2;
+                    path += ` Q ${points[i-1][0]} ${points[i-1][1]}, ${xc} ${yc}`;
+                }
+                const xc = (points[0][0] + points[points.length-1][0]) / 2;
+                const yc = (points[0][1] + points[points.length-1][1]) / 2;
+                path += ` Q ${points[points.length-1][0]} ${points[points.length-1][1]}, ${xc} ${yc}`;
+                path += ' Z';
+                return path;
+            }
+
+            // 通知Vue组件地图已准备就绪
+            window.parent.postMessage({ type: 'mapReady' }, '*');
+
+            // 接收来自Vue组件的消息
+            window.addEventListener('message', (event) => {
+                const data = event.data;
+                if (data.type === 'initNodes') {
+                    data.nodes.forEach(node => createNode(node));
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+ 

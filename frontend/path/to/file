@@ -1,0 +1,39 @@
+<template>
+	<view class="container">
+		<!-- 顶部凸弧背景 -->
+		<view class="header-container">
+			<svg class="bottom-arch" viewBox="0 0 750 120" preserveAspectRatio="none">
+				<path d="M0,0 C300,60 450,60 750,0 L750,120 L0,120 Z" fill="#b5d6f2" />
+				<text x="375" y="50" text-anchor="middle" dominant-baseline="middle" class="app-title">成就</text>
+			</svg>
+		</view>
+
+		<!-- 内容区域 -->
+		<scroll-view class="content-area" scroll-y>
+			<!-- ... existing wallet section code ... -->
+			<!-- ... existing achievement stats code ... -->
+			<!-- ... existing blockchain achievements code ... -->
+			<!-- ... existing traditional achievements code ... -->
+		</scroll-view>
+
+		<!-- 底部docker栏 -->
+		<view class="bottom-bg">
+			<image src="/static/docker/梯形.svg" mode="aspectFill"></image>
+		</view>
+
+		<view class="bottom-docker">
+			<view class="trapezoid t1" @click="navigateTo('map')">
+				<image style="z-index: 20;margin-left: 40rpx;" src="/static/docker/地图.svg" class="docker-icon" mode="aspectFit"></image>
+			</view>
+			<view class="trapezoid t2" @click="navigateTo('daily')">
+				<image style="z-index: 20;margin-left: 40rpx;" src="/static/docker/日推.svg" class="docker-icon" mode="aspectFit"></image>
+			</view>
+			<view class="trapezoid t3 active" @click="navigateTo('achievement')">
+				<image style="z-index: 20;margin-left: 40rpx;" src="/static/docker/成就.svg" class="docker-icon" mode="aspectFit"></image>
+			</view>
+			<view class="trapezoid t4" @click="navigateTo('profile')">
+				<image style="z-index: 20;margin-left: 40rpx;" src="/static/docker/我.svg" class="docker-icon" mode="aspectFit"></image>
+			</view>
+		</view>
+	</view>
+</template> 
