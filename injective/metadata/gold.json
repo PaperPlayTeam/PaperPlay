@@ -1,0 +1,31 @@
+{
+  "name": "黄金成就 🥇",
+  "description": "杰出！黄金等级成就代表着您的非凡成就和持续努力。",
+  "image": "https://api.achievementnft.com/images/gold.png",
+  "external_url": "https://achievementnft.com",
+  "background_color": "FFD700",
+  "attributes": [
+    {
+      "trait_type": "等级",
+      "value": "黄金"
+    },
+    {
+      "trait_type": "稀有度",
+      "value": "稀有"
+    },
+    {
+      "trait_type": "类型",
+      "value": "成就徽章"
+    },
+    {
+      "display_type": "number",
+      "trait_type": "等级分数",
+      "value": 500
+    }
+  ],
+  "properties": {
+    "category": "achievement",
+    "level": "gold",
+    "rarity": "rare"
+  }
+} 

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NFT成就系统</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.ethers.io/lib/ethers-5.7.umd.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- 头部导航 -->
+        <header class="header">
+            <div class="logo">
+                <h1>🏆 NFT成就系统</h1>
+            </div>
+            <div class="wallet-section">
+                <button id="connectWallet" class="btn btn-primary">连接钱包</button>
+                <div id="walletInfo" class="wallet-info hidden">
+                    <span id="walletAddress"></span>
+                    <button id="disconnectWallet" class="btn btn-secondary">断开</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- 主要内容区域 -->
+        <main class="main-content">
+            <!-- 连接提示 -->
+            <div id="connectPrompt" class="connect-prompt">
+                <div class="prompt-card">
+                    <h2>🚀 开始您的成就之旅</h2>
+                    <p>连接您的钱包来查看和管理您的NFT成就</p>
+                    <button id="connectPromptBtn" class="btn btn-primary btn-large">连接MetaMask钱包</button>
+                </div>
+            </div>
+
+            <!-- 主界面 -->
+            <div id="mainInterface" class="main-interface hidden">
+                <!-- 用户统计面板 -->
+                <section class="stats-section">
+                    <h2>📊 我的成就统计</h2>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">🏆</div>
+                            <div class="stat-info">
+                                <span class="stat-number" id="totalAchievements">0</span>
+                                <span class="stat-label">总成就</span>
+                            </div>
+                        </div>
+                        <div class="stat-card bronze">
+                            <div class="stat-icon">🥉</div>
+                            <div class="stat-info">
+                                <span class="stat-number" id="bronzeCount">0</span>
+                                <span class="stat-label">青铜</span>
+                            </div>
+                        </div>
+                        <div class="stat-card silver">
+                            <div class="stat-icon">🥈</div>
+                            <div class="stat-info">
+                                <span class="stat-number" id="silverCount">0</span>
+                                <span class="stat-label">白银</span>
+                            </div>
+                        </div>
+                        <div class="stat-card gold">
+                            <div class="stat-icon">🥇</div>
+                            <div class="stat-info">
+                                <span class="stat-number" id="goldCount">0</span>
+                                <span class="stat-label">黄金</span>
+                            </div>
+                        </div>
+                        <div class="stat-card diamond">
+                            <div class="stat-icon">💎</div>
+                            <div class="stat-info">
+                                <span class="stat-number" id="diamondCount">0</span>
+                                <span class="stat-label">钻石</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 管理员操作面板 -->
+                <section id="adminSection" class="admin-section hidden">
+                    <h2>⚙️ 管理员操作</h2>
+                    <div class="admin-actions">
+                        <div class="action-card">
+                            <h3>铸造成就</h3>
+                            <form id="mintForm" class="mint-form">
+                                <div class="form-group">
+                                    <label for="recipientAddress">接收者地址:</label>
+                                    <input type="text" id="recipientAddress" placeholder="0x..." required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="achievementName">成就名称:</label>
+                                    <input type="text" id="achievementName" placeholder="输入成就名称" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="achievementDescription">成就描述:</label>
+                                    <textarea id="achievementDescription" placeholder="输入成就描述" required></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label for="achievementType">成就等级:</label>
+                                    <select id="achievementType" required>
+                                        <option value="0">🥉 青铜</option>
+                                        <option value="1">🥈 白银</option>
+                                        <option value="2">🥇 黄金</option>
+                                        <option value="3">💎 钻石</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary">铸造成就</button>
+                            </form>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 我的成就展示 -->
+                <section class="achievements-section">
+                    <h2>🎖️ 我的成就</h2>
+                    <div id="achievementsList" class="achievements-grid">
+                        <!-- 成就卡片将在此处动态生成 -->
+                    </div>
+                    <div id="noAchievements" class="no-achievements">
+                        <p>您还没有获得任何成就，快去完成一些挑战吧！</p>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <!-- 加载遮罩 -->
+        <div id="loadingOverlay" class="loading-overlay hidden">
+            <div class="loading-spinner"></div>
+            <p>处理中...</p>
+        </div>
+
+        <!-- 通知系统 -->
+        <div id="notifications" class="notifications"></div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html> 

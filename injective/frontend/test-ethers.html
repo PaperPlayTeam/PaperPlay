@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ethers.js 测试</title>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+</head>
+<body>
+    <h1>Ethers.js 加载测试</h1>
+    <div id="result"></div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const resultDiv = document.getElementById('result');
+            
+            if (typeof ethers !== 'undefined') {
+                resultDiv.innerHTML = `
+                    <h2 style="color: green;">✅ Ethers.js 加载成功！</h2>
+                    <p><strong>版本:</strong> ${ethers.version}</p>
+                    <p><strong>可用的功能:</strong></p>
+                    <ul>
+                        <li>ethers.providers: ${typeof ethers.providers !== 'undefined' ? '✅' : '❌'}</li>
+                        <li>ethers.Contract: ${typeof ethers.Contract !== 'undefined' ? '✅' : '❌'}</li>
+                        <li>ethers.utils: ${typeof ethers.utils !== 'undefined' ? '✅' : '❌'}</li>
+                    </ul>
+                `;
+                
+                // 测试创建Provider
+                if (window.ethereum) {
+                    try {
+                        const provider = new ethers.providers.Web3Provider(window.ethereum);
+                        resultDiv.innerHTML += '<p style="color: green;">✅ 可以创建 Web3Provider</p>';
+                    } catch (error) {
+                        resultDiv.innerHTML += `<p style="color: red;">❌ 创建 Web3Provider 失败: ${error.message}</p>`;
+                    }
+                } else {
+                    resultDiv.innerHTML += '<p style="color: orange;">⚠️ 未检测到 MetaMask</p>';
+                }
+            } else {
+                resultDiv.innerHTML = '<h2 style="color: red;">❌ Ethers.js 未加载</h2>';
+            }
+        });
+    </script>
+</body>
+</html> 

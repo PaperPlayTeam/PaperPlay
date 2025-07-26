@@ -1,0 +1,31 @@
+{
+  "name": "白银成就 🥈",
+  "description": "优秀！您已达到白银等级，展现了卓越的表现。",
+  "image": "https://api.achievementnft.com/images/silver.png",
+  "external_url": "https://achievementnft.com",
+  "background_color": "C0C0C0",
+  "attributes": [
+    {
+      "trait_type": "等级",
+      "value": "白银"
+    },
+    {
+      "trait_type": "稀有度",
+      "value": "不常见"
+    },
+    {
+      "trait_type": "类型",
+      "value": "成就徽章"
+    },
+    {
+      "display_type": "number",
+      "trait_type": "等级分数",
+      "value": 250
+    }
+  ],
+  "properties": {
+    "category": "achievement",
+    "level": "silver",
+    "rarity": "uncommon"
+  }
+} 

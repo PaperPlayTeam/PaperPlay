@@ -1,0 +1,31 @@
+{
+  "name": "钻石成就 💎",
+  "description": "传奇！钻石等级成就是最高荣誉，代表着无与伦比的成就。",
+  "image": "https://api.achievementnft.com/images/diamond.png",
+  "external_url": "https://achievementnft.com",
+  "background_color": "00B4DB",
+  "attributes": [
+    {
+      "trait_type": "等级",
+      "value": "钻石"
+    },
+    {
+      "trait_type": "稀有度",
+      "value": "传奇"
+    },
+    {
+      "trait_type": "类型",
+      "value": "成就徽章"
+    },
+    {
+      "display_type": "number",
+      "trait_type": "等级分数",
+      "value": 1000
+    }
+  ],
+  "properties": {
+    "category": "achievement",
+    "level": "diamond",
+    "rarity": "legendary"
+  }
+} 

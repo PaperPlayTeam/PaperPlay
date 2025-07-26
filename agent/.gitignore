@@ -1,0 +1,7 @@
+.venv
+.env
+
+/papers
+/paper_data
+/downloads
+/sqlite

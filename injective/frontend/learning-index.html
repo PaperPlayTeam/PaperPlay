@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学习成就NFT系统</title>
+    <link rel="stylesheet" href="learning-style.css">
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- 头部导航 -->
+        <header class="header">
+            <div class="logo">
+                <h1>🎓 学习成就NFT系统</h1>
+            </div>
+            <div class="wallet-section">
+                <button id="connectWallet" class="btn btn-primary">连接钱包</button>
+                <div id="walletInfo" class="wallet-info hidden">
+                    <span id="walletAddress"></span>
+                    <button id="disconnectWallet" class="btn btn-secondary">断开</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- 主要内容区域 -->
+        <main class="main-content">
+            <!-- 连接提示 -->
+            <div id="connectPrompt" class="connect-prompt">
+                <div class="prompt-card">
+                    <h2>🚀 开启您的学习成就之旅</h2>
+                    <p>连接您的钱包来查看学习数据和申领成就NFT</p>
+                    <button id="connectPromptBtn" class="btn btn-primary btn-large">连接MetaMask钱包</button>
+                </div>
+            </div>
+
+            <!-- 主界面 -->
+            <div id="mainInterface" class="main-interface hidden">
+                <!-- 学习数据面板 -->
+                <section id="learningDataSection" class="learning-data-section">
+                    <h2>📊 我的学习数据</h2>
+                    <div class="data-grid">
+                        <div class="data-card">
+                            <div class="data-icon">🎯</div>
+                            <div class="data-info">
+                                <span class="data-number" id="firstTryCorrect">0</span>
+                                <span class="data-label">首次答对</span>
+                            </div>
+                        </div>
+                        <div class="data-card">
+                            <div class="data-icon">🔥</div>
+                            <div class="data-info">
+                                <span class="data-number" id="streakDays">0</span>
+                                <span class="data-label">连续学习天数</span>
+                            </div>
+                        </div>
+                        <div class="data-card">
+                            <div class="data-icon">⚡</div>
+                            <div class="data-info">
+                                <span class="data-number" id="avgDuration">0s</span>
+                                <span class="data-label">平均用时</span>
+                            </div>
+                        </div>
+                        <div class="data-card">
+                            <div class="data-icon">✅</div>
+                            <div class="data-info">
+                                <span class="data-number" id="correctRate">0%</span>
+                                <span class="data-label">正确率</span>
+                            </div>
+                        </div>
+                        <div class="data-card">
+                            <div class="data-icon">💪</div>
+                            <div class="data-info">
+                                <span class="data-number" id="totalTime">0h</span>
+                                <span class="data-label">学习时长</span>
+                            </div>
+                        </div>
+                        <div class="data-card">
+                            <div class="data-icon">🧠</div>
+                            <div class="data-info">
+                                <span class="data-number" id="hintUsed">0</span>
+                                <span class="data-label">使用提示</span>
+                            </div>
+                        </div>
+                        <div class="data-card">
+                            <div class="data-icon">📝</div>
+                            <div class="data-info">
+                                <span class="data-number" id="totalAttempts">0</span>
+                                <span class="data-label">总答题数</span>
+                            </div>
+                        </div>
+                        <div class="data-card">
+                            <div class="data-icon">🎓</div>
+                            <div class="data-info">
+                                <span class="data-number" id="retentionScore">0%</span>
+                                <span class="data-label">保留度</span>
+                            </div>
+                        </div>
+                        <div class="data-card">
+                            <div class="data-icon">📚</div>
+                            <div class="data-info">
+                                <span class="data-number" id="reviewDue">0</span>
+                                <span class="data-label">待复习</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 可申领成就 -->
+                <section id="claimableSection" class="achievements-section">
+                    <h2>🏆 可申领的成就</h2>
+                    <div id="claimableList" class="achievements-grid">
+                        <!-- 可申领的成就卡片将在此处动态生成 -->
+                    </div>
+                    <div id="noClaimable" class="no-achievements">
+                        <p>🎯 目前没有可申领的成就，继续努力学习吧！</p>
+                    </div>
+                </section>
+
+                <!-- 已获得成就 -->
+                <section id="ownedSection" class="achievements-section">
+                    <h2>🎖️ 我的成就</h2>
+                    <div id="ownedList" class="achievements-grid">
+                        <!-- 已获得的成就卡片将在此处动态生成 -->
+                    </div>
+                    <div id="noOwned" class="no-achievements">
+                        <p>📅 您还没有获得任何成就，开始学习之旅吧！</p>
+                    </div>
+                </section>
+
+                <!-- 管理员操作面板 -->
+                <section id="adminSection" class="admin-section hidden">
+                    <h2>⚙️ 管理员操作</h2>
+                    <div class="admin-actions">
+                        <div class="action-card">
+                            <h3>更新用户学习数据</h3>
+                            <form id="updateDataForm" class="update-form">
+                                <div class="form-group">
+                                    <label for="userAddress">用户地址:</label>
+                                    <input type="text" name="userAddress" placeholder="0x..." required>
+                                </div>
+                                
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="attempts_first_try_correct">首次答对:</label>
+                                        <input type="number" name="attempts_first_try_correct" min="0" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="streak_days">连续学习天数:</label>
+                                        <input type="number" name="streak_days" min="0" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="avg_duration_ms">平均用时(毫秒):</label>
+                                        <input type="number" name="avg_duration_ms" min="0" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="correct_rate">正确率(%):</label>
+                                        <input type="number" name="correct_rate" min="0" max="100" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="total_time_ms">学习时长(毫秒):</label>
+                                        <input type="number" name="total_time_ms" min="0" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="hint_used_count">使用提示次数:</label>
+                                        <input type="number" name="hint_used_count" min="0" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="attempts_total">总答题数:</label>
+                                        <input type="number" name="attempts_total" min="0" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="retention_score">保留度(%):</label>
+                                        <input type="number" name="retention_score" min="0" max="100" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="review_due_count">待复习数量:</label>
+                                    <input type="number" name="review_due_count" min="0" required>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary">更新数据</button>
+                            </form>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <!-- 加载遮罩 -->
+        <div id="loadingOverlay" class="loading-overlay hidden">
+            <div class="loading-spinner"></div>
+            <p>处理中...</p>
+        </div>
+
+        <!-- 通知系统 -->
+        <div id="notifications" class="notifications"></div>
+    </div>
+
+    <script src="learning-app.js"></script>
+</body>
+</html> 
