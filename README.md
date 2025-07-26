@@ -4,7 +4,6 @@
 [![Vue](https://img.shields.io/badge/Vue-2.x-green.svg)](https://vuejs.org)
 [![Python](https://img.shields.io/badge/Python-3.10+-orange.svg)](https://python.org)
 [![Solidity](https://img.shields.io/badge/Solidity-0.8.28-yellow.svg)](https://soliditylang.org)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 PaperPlay 是一个创新的论文游戏化学习平台，通过AI技术和Web3集成，将复杂的学术论文转化为易于理解的概念和互动式学习体验。
 
